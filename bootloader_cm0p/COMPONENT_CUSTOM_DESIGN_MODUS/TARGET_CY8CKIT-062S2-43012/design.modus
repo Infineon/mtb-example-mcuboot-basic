@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Design version="12" xmlns="http://cypress.com/xsd/cydesignfile_v3">
-    <ToolInfo version="2.1.0.1266"/>
+<Design version="12" device_library_hint_path="../../../../mtb_shared/mtb-pdl-cat1/release-v2.2.0/devicesupport.xml" xmlns="http://cypress.com/xsd/cydesignfile_v3">
+    <ToolInfo version="2.3.0.4276"/>
     <Devices>
-        <Device mpn="CY8C624ABZI-D44">
+        <Device mpn="CY8C624ABZI-S2D44">
             <BlockConfig>
                 <Block location="cpuss[0].dap[0]">
                     <Personality template="mxs40dap" version="1.0">
@@ -89,6 +89,7 @@
                     </Personality>
                 </Block>
                 <Block location="ioss[0].port[5].pin[0]">
+                    <Alias value="CYBSP_UART_RX"/>
                     <Personality template="mxs40pin" version="1.1">
                         <Param id="DriveModes" value="CY_GPIO_DM_HIGHZ"/>
                         <Param id="initialState" value="1"/>
@@ -101,6 +102,7 @@
                     </Personality>
                 </Block>
                 <Block location="ioss[0].port[5].pin[1]">
+                    <Alias value="CYBSP_UART_TX"/>
                     <Personality template="mxs40pin" version="1.1">
                         <Param id="DriveModes" value="CY_GPIO_DM_STRONG_IN_OFF"/>
                         <Param id="initialState" value="1"/>
@@ -409,6 +411,21 @@
                     </Personality>
                 </Block>
                 <Block location="srss[0].clock[0].pathmux[2]">
+                    <Personality template="mxs40pathmux" version="1.0">
+                        <Param id="sourceClock" value="imo"/>
+                    </Personality>
+                </Block>
+                <Block location="srss[0].clock[0].pathmux[3]">
+                    <Personality template="mxs40pathmux" version="1.0">
+                        <Param id="sourceClock" value="imo"/>
+                    </Personality>
+                </Block>
+                <Block location="srss[0].clock[0].pathmux[4]">
+                    <Personality template="mxs40pathmux" version="1.0">
+                        <Param id="sourceClock" value="imo"/>
+                    </Personality>
+                </Block>
+                <Block location="srss[0].clock[0].pathmux[5]">
                     <Personality template="mxs40pathmux" version="1.0">
                         <Param id="sourceClock" value="imo"/>
                     </Personality>

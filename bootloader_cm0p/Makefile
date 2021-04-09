@@ -7,15 +7,15 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2020-2021, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
-#
+# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+# 
 #     http://www.apache.org/licenses/LICENSE-2.0
-#
+# 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,6 +27,11 @@
 # MCUboot Specific Configuration
 ###############################################################################
 
+# use SWAP_UPGRADE = 0 for overwrite only mode, secondary image is simply
+# copied to primary slot after successful validation.
+# use SWAP_UPGRADE = 1 for swap upgrade mode
+SWAP_UPGRADE ?= 0
+
 # Set to 1 when MCUboot needs to support external flash for the secondary slot.
 # Default location is internal flash.
 USE_EXT_FLASH ?= 0
@@ -34,18 +39,16 @@ USE_EXT_FLASH ?= 0
 # Use hardware accelerated Crypto for MbedTLS
 USE_CRYPTO_HW ?= 1
 
-# Number of images supported in case of multi-image bootloading. 
-# This application supports only up to 2 images.
-MCUBOOT_IMAGE_NUMBER ?= 1
-
 ################################################################################
 # Basic Configuration
 ################################################################################
 
 # Target board/hardware (BSP).
-# To change the target, use the Library manager ('make modlibs' from command line).
-# If TARGET is manually edited, ensure TARGET_<BSP>.lib with a valid URL exists
-# in the application, and run 'make getlibs' to fetch BSP contents.
+# To change the target, it is recommended to use the Library manager 
+# ('make modlibs' from command line), which will also update Eclipse IDE launch 
+# configurations. If TARGET is manually edited, ensure TARGET_<BSP>.mtb with a 
+# valid URL exists in the application, run 'make getlibs' to fetch BSP contents
+# and update or regenerate launch configurations for your IDE.
 TARGET=CY8CPROTO-062-4343W
 
 # Name of application (used to derive name of final linked file).
@@ -53,7 +56,7 @@ APPNAME=mtb-example-psoc6-mcuboot-basic-bootloader
 
 # Name of toolchain to use. Options include:
 #
-# GCC_ARM -- GCC 7.2.1, provided with ModusToolbox IDE
+# GCC_ARM -- GCC provided with ModusToolbox IDE
 # ARM     -- ARM Compiler (must be installed separately)
 # IAR     -- IAR Compiler (must be installed separately)
 #
@@ -116,12 +119,6 @@ DEFINES+=CY_BOOT_BOOTLOADER_SIZE=$(BOOTLOADER_APP_FLASH_SIZE) \
          CY_BOOT_SECONDARY_1_SIZE=$(MCUBOOT_SLOT_SIZE) \
          CY_BOOT_SCRATCH_SIZE=$(MCUBOOT_SCRATCH_SIZE)
 
-# Define the slot sizes for the image #2 when you need to work with dual images.    
-ifeq ($(MCUBOOT_IMAGE_NUMBER), 2)   
-DEFINES+=CY_BOOT_PRIMARY_2_SIZE=$(MCUBOOT_SLOT_SIZE) \
-         CY_BOOT_SECONDARY_2_SIZE=$(MCUBOOT_SLOT_SIZE)
-endif
-
 # Add additional defines to the build process (without a leading -D).
 DEFINES+=PSOC_064_512K \
          MBEDTLS_CONFIG_FILE='"mcuboot_crypto_config.h"' \
@@ -129,14 +126,21 @@ DEFINES+=PSOC_064_512K \
          MCUBOOT_IMAGE_NUMBER=$(MCUBOOT_IMAGE_NUMBER) \
          MCUBOOT_MAX_IMG_SECTORS=$(MCUBOOT_MAX_IMG_SECTORS)
 
+ifeq ($(SWAP_UPGRADE), 0)
+DEFINES+=MCUBOOT_OVERWRITE_ONLY
+endif
+
 ifeq ($(USE_EXT_FLASH), 1)
+DEFINES+=CY_ENABLE_XIP_PROGRAM
 DEFINES+=CY_BOOT_USE_EXTERNAL_FLASH
 endif
 
 ifeq ($(USE_CRYPTO_HW), 1)
+CY_MBEDTLS_ACCLERATION_LIB_PATH=$(MCUBOOT_CY_PATH)/libs/cy-mbedtls-acceleration/mbedtls_MXCRYPTO
+
 DEFINES+=CY_CRYPTO_HAL_DISABLE MBEDTLS_USER_CONFIG_FILE='"mcuboot_crypto_acc_config.h"'
-else
-CY_IGNORE+=libs/cy-mbedtls-acceleration
+SOURCES+=$(wildcard $(CY_MBEDTLS_ACCLERATION_LIB_PATH)/*.c)
+INCLUDES+=$(CY_MBEDTLS_ACCLERATION_LIB_PATH)
 endif
 
 # Select softfp or hardfp floating point. Default is softfp.
@@ -210,9 +214,18 @@ endif
 # This controls where automatic source code discovery looks for code.
 CY_APP_PATH=
 
-# Relative path to the "base" library. It provides the core makefile build
-# infrastructure.
-CY_BASELIB_PATH=libs/psoc6make
+# Relative path to the shared repo location.
+#
+# All .mtb files have the format, <URI>#<COMMIT>#<LOCATION>. If the <LOCATION> field 
+# begins with $$ASSET_REPO$$, then the repo is deposited in the path specified by 
+# the CY_GETLIBS_SHARED_PATH variable. The default location is one directory level 
+# above the current app directory.
+# This is used with CY_GETLIBS_SHARED_NAME variable, which specifies the directory name.
+CY_GETLIBS_SHARED_PATH=../../
+
+# Directory name of the shared repo location.
+#
+CY_GETLIBS_SHARED_NAME=mtb_shared
 
 # Absolute path to the compiler's "bin" directory.
 #
@@ -231,7 +244,7 @@ CY_TOOLS_PATHS ?= $(wildcard \
 
 # If you install ModusToolbox IDE in a custom location, add the path to its
 # "tools_X.Y" folder (where X and Y are the version number of the tools
-# folder).
+# folder). Make sure you use forward slashes.
 CY_TOOLS_PATHS+=
 
 # Default to the newest installed tools folder, or the users override (if it's
@@ -239,7 +252,7 @@ CY_TOOLS_PATHS+=
 CY_TOOLS_DIR=$(lastword $(sort $(wildcard $(CY_TOOLS_PATHS))))
 
 ifeq ($(CY_TOOLS_DIR),)
-$(error Unable to find any of the available CY_TOOLS_PATHS -- $(CY_TOOLS_PATHS))
+$(error Unable to find any of the available CY_TOOLS_PATHS -- $(CY_TOOLS_PATHS). On Windows, use forward slashes.)
 endif
 
 $(info Tools Directory: $(CY_TOOLS_DIR))

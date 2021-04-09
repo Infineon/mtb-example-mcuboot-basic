@@ -10,15 +10,15 @@
 *
 ********************************************************************************
 * \copyright
-* Copyright 2018-2020 Cypress Semiconductor Corporation
+* Copyright 2020-2021, Cypress Semiconductor Corporation (an Infineon company)
 * SPDX-License-Identifier: Apache-2.0
-*
+* 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
-*
+* 
 *     http://www.apache.org/licenses/LICENSE-2.0
-*
+* 
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,7 @@
 * In addition to the APIs for reading and writting to memory at runtime, this library also 
 * provides support for informing programming tools about the external memory so it can be
 * be written at the same time as internal flash. This support can be enabled by defining 
-* CY_BOOT_USE_EXTERNAL_FLASH while building the application. With this define in place, code
+* CY_ENABLE_XIP_PROGRAM while building the application. With this define in place, code
 * will be generated in the .cy_sflash_user_data & .cy_toc_part2 sections. These locations 
 * can be read by programming tools (eg: Cypress Programmer, OpenOCD, pyOCD) to know that 
 * there is a memory device attached and how to program it.
@@ -45,7 +45,7 @@
 extern "C" {
 #endif
 
-#if defined(CY_BOOT_USE_EXTERNAL_FLASH)
+#if defined(CY_ENABLE_XIP_PROGRAM)
 
 #include "cycfg_qspi_memslot.h"
 
@@ -91,7 +91,7 @@ const uint32_t cyToc[128] =
     [127] =  0x3BB30000     /* Offset=0x01FC: CRC16-CCITT (the upper 2 bytes contain the CRC and the lower 2 bytes are 0) */
 };
 
-#endif /* defined(CY_BOOT_USE_EXTERNAL_FLASH) */
+#endif /* defined(CY_ENABLE_XIP_PROGRAM) */
 
 #if defined(__cplusplus)
 }

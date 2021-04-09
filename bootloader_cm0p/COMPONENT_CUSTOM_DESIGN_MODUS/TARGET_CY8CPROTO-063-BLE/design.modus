@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Design version="12" xmlns="http://cypress.com/xsd/cydesignfile_v3">
-    <ToolInfo version="2.1.0.1266"/>
+<Design version="12" device_library_hint_path="../../../../mtb_shared/mtb-pdl-cat1/release-v2.2.0/devicesupport.xml" xmlns="http://cypress.com/xsd/cydesignfile_v3">
+    <ToolInfo version="2.3.0.4276"/>
     <Devices>
         <Device mpn="CYBLE-416045-02">
             <BlockConfig>
@@ -44,6 +44,7 @@
                     </Personality>
                 </Block>
                 <Block location="ioss[0].port[5].pin[0]">
+                    <Alias value="CYBSP_UART_RX"/>
                     <Personality template="mxs40pin" version="1.1">
                         <Param id="DriveModes" value="CY_GPIO_DM_HIGHZ"/>
                         <Param id="initialState" value="1"/>
@@ -56,6 +57,7 @@
                     </Personality>
                 </Block>
                 <Block location="ioss[0].port[5].pin[1]">
+                    <Alias value="CYBSP_UART_TX"/>
                     <Personality template="mxs40pin" version="1.1">
                         <Param id="DriveModes" value="CY_GPIO_DM_STRONG_IN_OFF"/>
                         <Param id="initialState" value="1"/>
