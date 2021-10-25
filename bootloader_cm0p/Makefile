@@ -30,7 +30,7 @@
 # use SWAP_UPGRADE = 0 for overwrite only mode, secondary image is simply
 # copied to primary slot after successful validation.
 # use SWAP_UPGRADE = 1 for swap upgrade mode
-SWAP_UPGRADE ?= 0
+SWAP_UPGRADE ?= 0  
 
 # Set to 1 when MCUboot needs to support external flash for the secondary slot.
 # Default location is internal flash.

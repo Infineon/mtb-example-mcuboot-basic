@@ -47,7 +47,7 @@ HEADER_OFFSET ?= 0
 # Choose the Upgrade mode:
 # use SWAP_UPGRADE = 0 for overwrite only mode
 # use SWAP_UPGRADE = 1 for swap upgrade mode
-SWAP_UPGRADE ?= 0
+SWAP_UPGRADE ?= 0  
 
 # Set this to 1 when the image needs to be built for external flash. 
 # This affects the value used for padding by imgtool. 

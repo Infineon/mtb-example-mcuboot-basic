@@ -76,7 +76,11 @@
 #define USER_SWAP_IMAGE_OK                      (1UL)
 
 /* User input to mark the upgrade image in primary slot permanent */
-#define UPGRADE_IMG_PERMANENT                   ('Y')
+#define UPGRADE_IMG_PERMANENT_CAPITAL           ('Y')
+#define UPGRADE_IMG_PERMANENT_SMALL             ('y')
+
+/* UART function parameter value to wait forever */
+#define UART_WAIT_FOR_EVER                      (0)
 
 /*******************************************************************************
 * Function Prototypes
@@ -127,8 +131,6 @@ int main(void)
            IMG_TYPE, APP_VERSION_MAJOR, APP_VERSION_MINOR, APP_VERSION_BUILD);
     printf("\n=========================================================\n");
 
-    printf("[BlinkyApp] User LED toggles at %d msec interval\r\n\n", LED_TOGGLE_INTERVAL_MS);
-
     /* Update watchdog timer to mark successful start up of application */
     cy_wdg_kick();
     cy_wdg_free();
@@ -140,9 +142,10 @@ int main(void)
     char response;
 
     printf("[BlinkyApp] Do you want to mark the upgrade image in primary slot permanent (Y/N) ?\r\n");
-    scanf("%c", &response);
+    cyhal_uart_getc(&cy_retarget_io_uart_obj, &response, UART_WAIT_FOR_EVER);
+    printf("[BlinkyApp] Received response: %c\r\n", response);
 
-    if(UPGRADE_IMG_PERMANENT == response)
+    if((UPGRADE_IMG_PERMANENT_CAPITAL == response) || (UPGRADE_IMG_PERMANENT_SMALL == response))
     {
         /* Write Image OK flag to the slot trailer, so MCUBoot-loader
          * will not revert the new image.
@@ -172,6 +175,8 @@ int main(void)
     }
 
 #endif
+
+    printf("[BlinkyApp] User LED toggles at %d msec interval\r\n\n", LED_TOGGLE_INTERVAL_MS);
 
     for (;;)
     {
