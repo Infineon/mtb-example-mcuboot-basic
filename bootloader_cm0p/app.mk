@@ -84,7 +84,6 @@ INCLUDES+=\
     $(MCUBOOT_CY_PATH)/cy_flash_pal/include/flash_map_backend\
     $(MCUBOOT_CY_PATH)/platforms/retarget_io_pdl\
     $(MCUBOOTAPP_PATH)\
-    $(MCUBOOTAPP_PATH)/sysflash\
     $(MCUBOOTAPP_PATH)/os\
     $(MCUBOOTAPP_PATH)/config\
     $(MCUBOOT_CY_PATH)/libs/watchdog

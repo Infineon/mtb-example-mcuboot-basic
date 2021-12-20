@@ -125,13 +125,13 @@ VERBOSE=
 # Advanced Configuration
 ################################################################################
 
-MCUBOOT_PATH=../../mtb_shared/mcuboot/v1.7.0-cypress
+# Include the mtb.mk file
+-include ./libs/mtb.mk
 
-MCUBOOT_CY_PATH=$(MCUBOOT_PATH)/boot/cypress
+MCUBOOT_CY_PATH=$(SEARCH_mcuboot)/boot/cypress
 MCUBOOTAPP_PATH=$(MCUBOOT_CY_PATH)/MCUBootApp
 
-MBEDTLS_PATH=$(MCUBOOT_PATH)/ext/mbedtls
-CRYPTO_LIB_PATH=$(MBEDTLS_PATH)/crypto/library
+MBEDTLS_PATH=$(SEARCH_mcuboot)/ext/mbedtls
 
 # Include the shared configuration make file
 include ../bootloader_cm0p/shared_config.mk
@@ -155,14 +155,14 @@ DISABLE_COMPONENTS=
 # tree for source code and builds it. The SOURCES variable can be used to
 # manually add source code to the build process from a location not searched
 # by default, or otherwise not found by the build system.
-SOURCES+=$(wildcard $(MCUBOOT_PATH)/boot/bootutil/src/*.c)\
+SOURCES+=$(wildcard $(SEARCH_mcuboot)/boot/bootutil/src/*.c)\
          $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/cy_flash_map.c)\
          $(MCUBOOT_CY_PATH)/libs/watchdog/watchdog.c
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
-INCLUDES+=$(MCUBOOT_PATH)/boot/bootutil/include\
-          $(MCUBOOT_PATH)/boot/bootutil/src\
+INCLUDES+=$(SEARCH_mcuboot)/boot/bootutil/include\
+          $(SEARCH_mcuboot)/boot/bootutil/src\
           $(MCUBOOT_CY_PATH)/cy_flash_pal/include\
           $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_qspi\
           $(MCUBOOTAPP_PATH)\
@@ -239,7 +239,7 @@ endif
 # Set build directory for BOOT and UPGRADE images
 CY_BUILD_LOCATION=./build/$(IMG_TYPE)
 BINARY_OUT_PATH=$(CY_BUILD_LOC)/$(TARGET)/$(CONFIG)/$(APPNAME)
-IMGTOOL_PATH=$(MCUBOOT_PATH)/scripts/imgtool.py
+IMGTOOL_PATH=$(SEARCH_mcuboot)/scripts/imgtool.py
 CY_BUILD_VERSION=$(APP_VERSION_MAJOR).$(APP_VERSION_MINOR).$(APP_VERSION_BUILD)
 SIGN_ARGS=sign --header-size $(MCUBOOT_HEADER_SIZE) --pad-header --align 8 -v $(CY_BUILD_VERSION) \
                -S $(MCUBOOT_SLOT_SIZE) -M $(MCUBOOT_MAX_IMG_SECTORS) $(UPGRADE_TYPE) -R $(ERASED_VALUE) -k $(KEY_FILE_PATH)/$(SIGN_KEY_FILE).pem

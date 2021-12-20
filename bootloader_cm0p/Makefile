@@ -182,9 +182,8 @@ LDLIBS=
 # files from design.cyqspi file, under GeneratedSource directory. This
 # configuration is used by the programmer to program the external flash. 
 # See cy_serial_flash_prog.c file for details. 
-
-PREBUILD=\
-if [ -n "$$(ls -A $(MBEDTLS_PATH) 2>/dev/null)" ]; then\
+PREBUILD_VAR=\
+@if [ -n "$$(ls -A $(MBEDTLS_PATH) 2>/dev/null)" ]; then\
     echo "Git submodules for MCUboot exist. Skipping this step...";\
     else\
     echo "Initializing Git Submodules for MCUboot";\
@@ -193,6 +192,8 @@ fi;\
 if [ $(USE_EXT_FLASH) -eq 1 ]; then\
     $(CY_QSPI_CONFIGURATOR_DIR)/qspi-configurator-cli --config $(wildcard ./COMPONENT_CUSTOM_DESIGN_MODUS/TARGET_$(TARGET)/*.cyqspi);\
 fi;
+
+PREBUILD= $(PREBUILD_VAR)
 
 # Custom post-build commands to run.
 POSTBUILD=
