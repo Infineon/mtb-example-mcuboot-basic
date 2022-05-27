@@ -8,7 +8,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2020-2021, Cypress Semiconductor Corporation (an Infineon company)
+# Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,8 @@
 # limitations under the License.
 ################################################################################
 
+-include ./libs/mtb.mk
+
 MCUBOOT_PATH=$(SEARCH_mcuboot)
 
 ################################################################################
@@ -31,26 +33,12 @@ MCUBOOT_PATH=$(SEARCH_mcuboot)
 ################################################################################
 
 MBEDTLS_PATH=$(MCUBOOT_PATH)/ext/mbedtls
-CRYPTO_LIB_PATH=$(MBEDTLS_PATH)/crypto/library
 
-# Following files are present in both $(MBEDTLS_PATH)/library and 
-# $(MBEDTLS_PATH)/crypto/library. Therefore, use the files only from
-# $(MBEDTLS_PATH)/library as mbedtls is the parent project and crypto is a 
-# submodule. 
-FILES_TO_EXCLUDE=\
-    $(CRYPTO_LIB_PATH)/error.c\
-    $(CRYPTO_LIB_PATH)/version.c\
-    $(CRYPTO_LIB_PATH)/version_features.c
-
-SOURCES+=\
-    $(wildcard $(MBEDTLS_PATH)/library/*.c)\
-    $(filter-out $(FILES_TO_EXCLUDE), $(wildcard $(CRYPTO_LIB_PATH)/*.c))
-        
+SOURCES+=$(wildcard $(MBEDTLS_PATH)/library/*.c)\
+     
 INCLUDES+=\
-    $(MBEDTLS_PATH)/include\
-    $(MBEDTLS_PATH)/include/mbedtls\
-    $(MBEDTLS_PATH)/crypto/include\
-    $(MBEDTLS_PATH)/crypto/include/mbedtls
+     $(MBEDTLS_PATH)/include\
+     $(MBEDTLS_PATH)/library\
 
 ################################################################################
 # MCUboot Files
@@ -61,28 +49,30 @@ MCUBOOTAPP_PATH=$(MCUBOOT_CY_PATH)/MCUBootApp
 
 SOURCES+=\
     $(wildcard $(MCUBOOT_PATH)/boot/bootutil/src/*.c)\
-    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/cy_flash_map.c)\
-    $(MCUBOOT_CY_PATH)/platforms/retarget_io_pdl/cy_retarget_io_pdl.c\
+    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/cy_flash_map.c)\
+    $(MCUBOOT_CY_PATH)/libs/retarget_io_pdl/cy_retarget_io_pdl.c\
+    $(MCUBOOT_CY_PATH)/libs/watchdog/watchdog.c\
     $(MCUBOOTAPP_PATH)/cy_security_cnt.c\
-    $(MCUBOOTAPP_PATH)/image_ec256_mbedtls.c\
     $(MCUBOOTAPP_PATH)/keys.c\
-    $(MCUBOOT_CY_PATH)/libs/watchdog/watchdog.c
+    $(MCUBOOTAPP_PATH)/cy_serial_flash_prog.c
 
 # Do not include QSPI API from flash PAL when external flash is not used.
-ifeq ($(USE_EXT_FLASH), 1)  
+ifeq ($(USE_EXTERNAL_FLASH), 1)  
 SOURCES+=\
-    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/cy_smif_psoc6.c)\
-    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_qspi/*.c)
+    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/cy_smif_psoc6.c)\
+    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/flash_qspi/*.c)
 endif
     
 INCLUDES+=\
     ./keys\
     $(MCUBOOT_PATH)/boot/bootutil/include\
     $(MCUBOOT_PATH)/boot/bootutil/src\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal/include\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_qspi\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal/include/flash_map_backend\
-    $(MCUBOOT_CY_PATH)/platforms/retarget_io_pdl\
+    $(MCUBOOT_CY_PATH)/cy_flash_pal\
+    $(MCUBOOT_CY_PATH)/cy_flash_pal/sysflash\
+    $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/include\
+    $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/flash_qspi\
+    $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/include/flash_map_backend\
+    $(MCUBOOT_CY_PATH)/libs/retarget_io_pdl\
     $(MCUBOOTAPP_PATH)\
     $(MCUBOOTAPP_PATH)/os\
     $(MCUBOOTAPP_PATH)/config\

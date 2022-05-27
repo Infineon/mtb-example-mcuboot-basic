@@ -7,7 +7,7 @@
 * Related Document: See README.md
 *
 *******************************************************************************
-* Copyright 2020-2021, Cypress Semiconductor Corporation (an Infineon company) or
+* Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company) or
 * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
 *
 * This software, including source code, documentation and related
@@ -59,6 +59,7 @@
 #include "bootutil/bootutil.h"
 #include "bootutil/sign_key.h"
 #include "bootutil/bootutil_log.h"
+#include "bootutil/fault_injection_hardening.h"
 
 /* Watchdog header file */
 #include "watchdog.h"
@@ -71,15 +72,22 @@
  * 0 - SMIF disabled (no external memory)
  * 1, 2, 3, or 4 - slave select line to which the memory module is connected. 
  */
-#define QSPI_SLAVE_SELECT_LINE  (1UL)
+#define QSPI_SLAVE_SELECT_LINE              (1UL)
 
 /* WDT time out for reset mode, in milliseconds. */
-#define WDT_TIME_OUT_MS         (4000UL)
+#define WDT_TIME_OUT_MS                     (4000UL)
 
 /* Number of attempts to check if UART TX is complete. 10ms delay is applied
  * between successive attempts.
  */
-#define UART_TX_COMPLETE_POLL_COUNT             (10UL)
+#define UART_TX_COMPLETE_POLL_COUNT         (10UL)
+
+/* General MCUBoot module error */
+#define CY_RSLT_MODULE_MCUBOOTAPP           (0x500U)
+#define CY_RSLT_MODULE_MCUBOOTAPP_MAIN      (0x51U)
+#define MCUBOOTAPP_RSLT_ERR \
+    (CY_RSLT_CREATE_EX(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_MCUBOOTAPP, CY_RSLT_MODULE_MCUBOOTAPP_MAIN, 0))
+
 
 /******************************************************************************
  * Function Name: deinit_hw
@@ -88,18 +96,17 @@
  *  This function performs the necessary hardware de-initialization.
  *
  ******************************************************************************/
-static void deinit_hw(void)
+static void hw_deinit(void)
 {
+    cy_retarget_io_wait_tx_complete(CYBSP_UART_HW, 10);
     cy_retarget_io_pdl_deinit();
-
     Cy_GPIO_Port_Deinit(CYBSP_UART_RX_PORT);
     Cy_GPIO_Port_Deinit(CYBSP_UART_TX_PORT);
-
-#ifdef CY_BOOT_USE_EXTERNAL_FLASH
+#if defined(CY_BOOT_USE_EXTERNAL_FLASH) && !defined(MCUBOOT_ENC_IMAGES_XIP) && !defined(USE_XIP)
     qspi_deinit(QSPI_SLAVE_SELECT_LINE);
-#endif /* CY_BOOT_USE_EXTERNAL_FLASH */
-
+#endif
 }
+
 
 /******************************************************************************
  * Function Name: do_boot
@@ -112,17 +119,60 @@ static void deinit_hw(void)
  *  rsp - Pointer to a structure holding the address to boot from. 
  *
  ******************************************************************************/
-static void do_boot(struct boot_rsp *rsp)
+static bool do_boot(struct boot_rsp *rsp)
 {
-    uint32_t app_addr = (rsp->br_image_off + rsp->br_hdr->ih_hdr_size);
+    uintptr_t flash_base = 0;
 
-    BOOT_LOG_INF("Starting User Application on CM4. Please wait...");
-    cy_retarget_io_wait_tx_complete(CYBSP_UART_HW, UART_TX_COMPLETE_POLL_COUNT);
+    if (rsp != NULL)
+    {
+        int rc = flash_device_base(rsp->br_flash_dev_id, &flash_base);
 
-    deinit_hw();
+        if (0 == rc)
+        {
+            fih_uint app_addr = fih_uint_encode(flash_base +
+                                                rsp->br_image_off +
+                                                rsp->br_hdr->ih_hdr_size);
 
-    Cy_SysEnableCM4(app_addr);
+            BOOT_LOG_INF("Starting User Application (wait)...");
+            if (IS_ENCRYPTED(rsp->br_hdr))
+            {
+                BOOT_LOG_INF(" * User application is encrypted");
+            }
+
+            BOOT_LOG_INF("Start slot Address: 0x%08" PRIx32, (uint32_t)fih_uint_decode(app_addr));
+
+            rc = flash_device_base(rsp->br_flash_dev_id, &flash_base);
+            if ((rc != 0) || fih_uint_not_eq(fih_uint_encode(flash_base +
+                                             rsp->br_image_off +
+                                             rsp->br_hdr->ih_hdr_size),
+                                             app_addr))
+            {
+                return false;
+            }
+
+            BOOT_LOG_INF("MCUBoot Bootloader finished");
+            BOOT_LOG_INF("Deinitializing hardware...");
+
+            hw_deinit();
+
+#ifdef USE_XIP
+            BOOT_LOG_INF("XIP: Switch to SMIF XIP mode");
+            qspi_set_mode(CY_SMIF_MEMORY);
+#endif
+
+            Cy_SysEnableCM4(fih_uint_decode(app_addr));
+            return true;
+        }
+        else
+        {
+            BOOT_LOG_ERR("Flash device ID not found");
+            return false;
+        }
+    }
+
+    return false;
 }
+
 
 /******************************************************************************
  * Function Name: main
@@ -140,77 +190,96 @@ static void do_boot(struct boot_rsp *rsp)
  ******************************************************************************/
 int main(void)
 {
-    /* Structure holding the address to boot from */
     struct boot_rsp rsp;
-    
-    /* Initialize system resources and peripherals. */
-    init_cycfg_all();
-    
-    /* Certain PSoC 6 devices enable CM4 by default at startup. It must be 
-     * either disabled or enabled & running a valid application for flash write
-     * to work from CM0+. Since flash write may happen in boot_go() for updating
-     * the image before this bootloader app can enable CM4 in do_boot(), we need
-     * to keep CM4 disabled. Note that debugging of CM4 is not supported when it
-     * is disabled.
-     */
-    #if defined(CY_DEVICE_PSOC6ABLE2)
-    if (CY_SYS_CM4_STATUS_ENABLED == Cy_SysGetCM4Status())
-    {
+    cy_rslt_t rc = MCUBOOTAPP_RSLT_ERR;
+    bool boot_succeeded = false;
+    fih_int fih_rc = FIH_FAILURE;
+
+/* Certain PSoC 6 devices enable CM4 by default at startup. It must be
+ * either disabled or enabled & running a valid application for flash write
+ * to work from CM0+. Since flash write may happen in boot_go() for updating
+ * the image before this bootloader app can enable CM4 in do_boot(), we need
+ * to keep CM4 disabled. Note that debugging of CM4 is not supported when it
+ * is disabled.
+ */
+#if defined(CY_DEVICE_PSOC6ABLE2)
+    if (CY_SYS_CM4_STATUS_ENABLED == Cy_SysGetCM4Status()) {
         Cy_SysDisableCM4();
     }
-    #endif /* #if defined(CY_DEVICE_PSOC6ABLE2) */
+#endif
 
-    /* Enable interrupts */
+    /* Initialize system resources and peripherals. */
+    init_cycfg_all();
+
+    /* enable interrupts */
     __enable_irq();
 
     /* Initialize retarget-io to redirect the printf output */
     cy_retarget_io_pdl_init(CY_RETARGET_IO_BAUDRATE);
 
-    BOOT_LOG_INF("\x1b[2J\x1b[;H");
-    BOOT_LOG_INF("MCUboot Bootloader Started");
+    BOOT_LOG_INF("MCUBoot Bootloader Started");
 
 #ifdef CY_BOOT_USE_EXTERNAL_FLASH
+    cy_en_smif_status_t qspi_status = qspi_init_sfdp(QSPI_SLAVE_SELECT_LINE);
 
-    /* Initialize QSPI NOR flash using SFDP. */
-    cy_rslt_t result = qspi_init_sfdp(QSPI_SLAVE_SELECT_LINE);
-
-    if(CY_SMIF_SUCCESS == result)
+    if (CY_SMIF_SUCCESS == qspi_status)
     {
-        BOOT_LOG_INF("External Memory initialized using SFDP");
+        rc = CY_RSLT_SUCCESS;
+        BOOT_LOG_INF("External Memory initialized w/ SFDP.");
     }
     else
     {
-        BOOT_LOG_ERR("External Memory initialization using SFDP FAILED: 0x%02x", (int)result);
+        rc = MCUBOOTAPP_RSLT_ERR;
+        BOOT_LOG_ERR("External Memory initialization w/ SFDP FAILED: 0x%08" PRIx32, (uint32_t)qspi_status);
     }
 
-    if(CY_SMIF_SUCCESS == result)
-#endif /* CY_BOOT_USE_EXTERNAL_FLASH */
+#endif
+
+    (void)memset(&rsp, 0, sizeof(rsp));
+    FIH_CALL(boot_go, fih_rc, &rsp);
+
+    if (true == fih_eq(fih_rc, FIH_SUCCESS))
     {
-        if (boot_go(&rsp) == 0)
+
+        BOOT_LOG_INF("User Application validated successfully");
+
+        /* initialize watchdog timer. it should be updated from user app
+        * to mark successful start up of this app. if the watchdog is not updated,
+        * reset will be initiated by watchdog timer and swap revert operation started
+        * to roll back to operable image.
+        */
+        rc = cy_wdg_init(WDT_TIME_OUT_MS);
+
+        if (CY_RSLT_SUCCESS == rc)
         {
-            BOOT_LOG_INF("User Application validated successfully");
-            
-            /* Intitalize the watchdog timer. It should be updated from the user application
-             * to mark successful start up of the application. If the watchdog is not updated,
-             * reset will be initiated by watchdog timer and swap revert operation will be
-             * started to roll back to the operable image.
-             */
-            cy_wdg_init(WDT_TIME_OUT_MS);
-            do_boot(&rsp);
+            boot_succeeded = do_boot(&rsp);
+
+            if (!boot_succeeded)
+            {
+                BOOT_LOG_ERR("Boot of next app failed");
+            }
         }
         else
         {
-            BOOT_LOG_INF("MCUboot Bootloader found no bootable image") ;
-            cy_retarget_io_wait_tx_complete(CYBSP_UART_HW, 10);
-        }   
+            BOOT_LOG_ERR("Failed to init WDT");
+        }
     }
-    
+    else
+    {
+        BOOT_LOG_ERR("MCUBoot Bootloader found none of bootable images");
+    }
+
     while (true)
     {
-        Cy_SysPm_CpuEnterDeepSleep(CY_SYSPM_WAIT_FOR_INTERRUPT);
+        if (boot_succeeded)
+        {
+            (void)Cy_SysPm_CpuEnterDeepSleep(CY_SYSPM_WAIT_FOR_INTERRUPT);
+        }
+        else
+        {
+            __WFI();
+        }
     }
-    
-    return 0;
 }
 
 /* [] END OF FILE */

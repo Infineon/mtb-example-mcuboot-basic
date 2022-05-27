@@ -1,6 +1,6 @@
 /***************************************************************************//**
 * \file cy8c6xx7_cm4_dual.ld
-* \version 2.80
+* \version 2.91
 *
 * Linker file for the GNU C compiler.
 *
@@ -19,7 +19,7 @@
 *
 ********************************************************************************
 * \copyright
-* Copyright 2016-2020 Cypress Semiconductor Corporation
+* Copyright 2016-2021 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,6 +46,11 @@ SYS_USE_RAM_SIZE = 0x800;
 /* The size of the stack section at the end of CM4 SRAM */
 STACK_SIZE = 0x1000;
 
+/* By default, the COMPONENT_CM0P_SLEEP prebuilt image is used for the CM0p core.
+* More about CM0+ prebuilt images, see here:
+* https://github.com/Infineon/psoc6cm0p
+*/
+
 /* Force symbol to be entered in the output file as an undefined symbol. Doing
 * this may, for example, trigger linking of additional modules from standard
 * libraries. You may list several symbols for each EXTERN, and you may use
@@ -67,7 +72,7 @@ MEMORY
      * where 'xx' is the device group; for example, 'cy8c6xx7_cm0plus.ld'.
      */
     ram               (rwx)   : ORIGIN = (0x08000000 + CM0P_RAM_SIZE), LENGTH = (0x48000 - SYS_USE_RAM_SIZE - CM0P_RAM_SIZE)
-    flash             (rx)    : ORIGIN = (0x10000000 + CM0P_FLASH_SIZE), LENGTH = CM4_FLASH_SIZE
+    flash             (rx)    : ORIGIN = USER_APP_START, LENGTH = USER_APP_SIZE
 
     /* This is a 32K flash region used for EEPROM emulation. This region can also be used as the general purpose flash.
      * You can assign sections to this memory region for only one of the cores.

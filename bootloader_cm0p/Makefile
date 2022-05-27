@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2020-2021, Cypress Semiconductor Corporation (an Infineon company)
+# Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,22 +22,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ################################################################################
-
-################################################################################
-# MCUboot Specific Configuration
-###############################################################################
-
-# use SWAP_UPGRADE = 0 for overwrite only mode, secondary image is simply
-# copied to primary slot after successful validation.
-# use SWAP_UPGRADE = 1 for swap upgrade mode
-SWAP_UPGRADE ?= 0  
-
-# Set to 1 when MCUboot needs to support external flash for the secondary slot.
-# Default location is internal flash.
-USE_EXT_FLASH ?= 0
-
-# Use hardware accelerated Crypto for MbedTLS
-USE_CRYPTO_HW ?= 1
 
 ################################################################################
 # Basic Configuration
@@ -71,12 +55,38 @@ CORE=CM0P
 # Debug -- build with minimal optimizations, focus on debugging.
 # Release -- build with full optimizations
 # Custom -- build with custom configuration, set the optimization flag in CFLAGS
-
 CONFIG=Debug
 
 # If set to "true" or "1", display full command-lines when building.
 VERBOSE=
 
+################################################################################
+# MCUboot Specific Configuration
+###############################################################################
+
+# Include the application make files 
+include ./shared_config.mk
+
+# Python path definition
+ifeq ($(OS),Windows_NT)
+PYTHON_PATH?=python
+else
+PYTHON_PATH?=python3
+endif
+
+.PHONY: flashmap.mk    
+
+# Python command to generate flashmap header file from flashmap JSON file
+ifneq ($(FLASH_MAP), )
+flashmap.mk:
+	@echo -e "\n==============================================================================================================================================================="
+	@echo -e "= Generating cy_flash_map.h and flashmap.mk using $(FLASH_MAP) file (Look out for any warnings or errors in this step) ="
+	@echo -e "==============================================================================================================================================================="
+	$(PYTHON_PATH) ./scripts/flashmap.py -p $(PLATFORM) -i ./flashmap/$(FLASH_MAP) -o ./source/cy_flash_map.h > ./flashmap.mk
+	@echo -e "===============================================================================================================================================================\n"
+    
+-include ./flashmap.mk
+endif
 
 ################################################################################
 # Advanced Configuration
@@ -93,54 +103,40 @@ VERBOSE=
 # added to the build
 #
 
+# Include the application make files 
+include ./app.mk
+
 # Do not define PSOC6HAL component as HAL is not supported for CM0+
 COMPONENTS=CUSTOM_DESIGN_MODUS
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
 DISABLE_COMPONENTS=BSP_DESIGN_MODUS
 
-# By default the build system automatically looks in the Makefile's directory
-# tree for source code and builds it. The SOURCES variable can be used to
-# manually add source code to the build process from a location not searched
-# by default, or otherwise not found by the build system.
-SOURCES=
-
-# Like SOURCES, but for include directories. Value should be paths to
-# directories (without a leading -I).
-INCLUDES=
-
-# Include the application make files 
-include ./app.mk
-include ./shared_config.mk
-
 # The following defines describe the flash map used by MCUBoot
-DEFINES+=CY_BOOT_BOOTLOADER_SIZE=$(BOOTLOADER_APP_FLASH_SIZE) \
-         CY_BOOT_PRIMARY_1_SIZE=$(MCUBOOT_SLOT_SIZE) \
-         CY_BOOT_SECONDARY_1_SIZE=$(MCUBOOT_SLOT_SIZE) \
+DEFINES+=CY_BOOT_BOOTLOADER_SIZE=$(BOOTLOADER_SIZE) \
          CY_BOOT_SCRATCH_SIZE=$(MCUBOOT_SCRATCH_SIZE)
 
 # Add additional defines to the build process (without a leading -D).
-DEFINES+=PSOC_064_512K \
-         MBEDTLS_CONFIG_FILE='"mcuboot_crypto_config.h"' \
+DEFINES+=MBEDTLS_CONFIG_FILE='"mcuboot_crypto_config.h"' \
          ECC256_KEY_FILE='"$(SIGN_KEY_FILE).pub"' \
          MCUBOOT_IMAGE_NUMBER=$(MCUBOOT_IMAGE_NUMBER) \
-         MCUBOOT_MAX_IMG_SECTORS=$(MCUBOOT_MAX_IMG_SECTORS)
+         MCUBOOT_MAX_IMG_SECTORS=$(MAX_IMG_SECTORS) \
+         MCUBOOT_LOG_LEVEL=MCUBOOT_LOG_LEVEL_INFO \
+         $(FAMILY) \
+         $(PLATFORM)
 
-ifeq ($(SWAP_UPGRADE), 0)
+# Add defines to enable image overwrite operation
+ifeq ($(USE_OVERWRITE), 1)
 DEFINES+=MCUBOOT_OVERWRITE_ONLY
 endif
 
-ifeq ($(USE_EXT_FLASH), 1)
-DEFINES+=CY_ENABLE_XIP_PROGRAM
-DEFINES+=CY_BOOT_USE_EXTERNAL_FLASH
+# Add defines to enable usage of external flash for secondary or both images (XIP)
+ifeq ($(USE_EXTERNAL_FLASH), 1)
+ifeq ($(USE_XIP), 1)
+DEFINES+=USE_XIP
 endif
-
-ifeq ($(USE_CRYPTO_HW), 1)
-CY_MBEDTLS_ACCLERATION_LIB_PATH=$(MCUBOOT_CY_PATH)/libs/cy-mbedtls-acceleration/mbedtls_MXCRYPTO
-
-DEFINES+=CY_CRYPTO_HAL_DISABLE MBEDTLS_USER_CONFIG_FILE='"mcuboot_crypto_acc_config.h"'
-SOURCES+=$(wildcard $(CY_MBEDTLS_ACCLERATION_LIB_PATH)/*.c)
-INCLUDES+=$(CY_MBEDTLS_ACCLERATION_LIB_PATH)
+DEFINES+=CY_BOOT_USE_EXTERNAL_FLASH
+DEFINES+=CY_MAX_EXT_FLASH_ERASE_SIZE=$(PLATFORM_CY_MAX_EXT_FLASH_ERASE_SIZE)
 endif
 
 # Select softfp or hardfp floating point. Default is softfp.
@@ -189,7 +185,7 @@ PREBUILD_VAR=\
     echo "Initializing Git Submodules for MCUboot";\
     cd libs/mcuboot;git submodule update --init --recursive;\
 fi;\
-if [ $(USE_EXT_FLASH) -eq 1 ]; then\
+if [ $(USE_EXTERNAL_FLASH) -eq 1 ]; then\
     $(CY_QSPI_CONFIGURATOR_DIR)/qspi-configurator-cli --config $(wildcard ./COMPONENT_CUSTOM_DESIGN_MODUS/TARGET_$(TARGET)/*.cyqspi);\
 fi;
 
@@ -201,7 +197,7 @@ POSTBUILD=
 # Toolchain specific linker flags
 ifeq ($(TOOLCHAIN), GCC_ARM)
 LINKER_SCRIPT=$(wildcard ./linker_script/TARGET_$(TARGET)/TOOLCHAIN_$(TOOLCHAIN)/*.ld)
-LDFLAGS+=-Wl,--defsym=CM0P_FLASH_SIZE=$(BOOTLOADER_APP_FLASH_SIZE),--defsym=CM0P_RAM_SIZE=$(BOOTLOADER_APP_RAM_SIZE)
+LDFLAGS+=-Wl,--defsym=CM0P_FLASH_SIZE=$(BOOTLOADER_SIZE),--defsym=CM0P_RAM_SIZE=$(BOOTLOADER_APP_RAM_SIZE)
 else
 $(error Only GCC_ARM is supported at this moment)
 endif

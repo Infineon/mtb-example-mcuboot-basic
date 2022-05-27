@@ -7,7 +7,7 @@
 * Related Document: See README.md
 *
 *******************************************************************************
-* Copyright 2020-2021, Cypress Semiconductor Corporation (an Infineon company) or
+* Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company) or
 * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
 *
 * This software, including source code, documentation and related
@@ -53,22 +53,14 @@
 * Macros
 ********************************************************************************/
 /* LED turn off and on interval based on BOOT or UPGRADE image*/
-#ifdef BOOT_IMG
+#ifdef BOOT_IMAGE
     #define LED_TOGGLE_INTERVAL_MS         (1000u)
     #define IMG_TYPE                       "BOOT"
-#elif defined(UPGRADE_IMG)
+#elif defined(UPGRADE_IMAGE)
     #define LED_TOGGLE_INTERVAL_MS         (250u)
     #define IMG_TYPE                       "UPGRADE"
 #else
-    #error "[BlinkyApp] Please define the image type: BOOT_IMG or UPGRADE_IMG\n"
-#endif
-
-#ifndef USER_APP_START
-#define USER_APP_START 0x10018000UL
-#endif
-
-#ifndef USER_APP_SIZE
-#define USER_APP_SIZE  0x10000UL
+    #error "[BlinkyApp] Please define the image type: BOOT_IMAGE or UPGRADE_IMAGE\n"
 #endif
 
 /* Img_ok offset in the slot trailer */
@@ -85,8 +77,8 @@
 /*******************************************************************************
 * Function Prototypes
 ********************************************************************************/
-#if (SWAP_ENABLED == 1) && defined(UPGRADE_IMG)
-static cy_en_flashdrv_status_t flash_write_byte(uint32_t address, uint8_t data);
+#if (SWAP_DISABLED == 0) && defined(UPGRADE_IMAGE)
+int set_img_ok(uint32_t address, uint8_t value);
 #endif
 
 /******************************************************************************
@@ -136,26 +128,26 @@ int main(void)
     cy_wdg_free();
     printf("[BlinkyApp] Watchdog timer started by the bootloader is now turned off to mark the successful start of Blinky app.\r\n");
 
-#if (SWAP_ENABLED == 1) && defined(UPGRADE_IMG)
+#if (SWAP_DISABLED == 0) && defined(UPGRADE_IMAGE)
 
     uint32_t img_ok_addr;
-    char response;
+    uint8_t response;
 
-    printf("[BlinkyApp] Do you want to mark the upgrade image in primary slot permanent (Y/N) ?\r\n");
-    cyhal_uart_getc(&cy_retarget_io_uart_obj, &response, UART_WAIT_FOR_EVER);
-    printf("[BlinkyApp] Received response: %c\r\n", response);
+    img_ok_addr = USER_APP_START + USER_APP_SIZE - USER_SWAP_IMAGE_OK_OFFS;
 
-    if((UPGRADE_IMG_PERMANENT_CAPITAL == response) || (UPGRADE_IMG_PERMANENT_SMALL == response))
+    if (*((uint8_t *)img_ok_addr) != USER_SWAP_IMAGE_OK)
     {
-        /* Write Image OK flag to the slot trailer, so MCUBoot-loader
-         * will not revert the new image.
-         */
-        img_ok_addr = USER_APP_START + USER_APP_SIZE - USER_SWAP_IMAGE_OK_OFFS;
+        printf("[BlinkyApp] Do you want to mark the upgrade image in primary slot permanent (Y/N) ?\r\n");
+        cyhal_uart_getc(&cy_retarget_io_uart_obj, &response, UART_WAIT_FOR_EVER);
+        printf("[BlinkyApp] Received response: %c\r\n", response);
 
-        if (*((uint8_t *)img_ok_addr) != USER_SWAP_IMAGE_OK)
+        if((UPGRADE_IMG_PERMANENT_CAPITAL == response) || (UPGRADE_IMG_PERMANENT_SMALL == response))
         {
-            result = flash_write_byte(img_ok_addr, USER_SWAP_IMAGE_OK);
-            if (CY_FLASH_DRV_SUCCESS == result)
+            /* Write Image OK flag to the slot trailer, so MCUBoot-loader
+             * will not revert the new image.
+             */
+            result = set_img_ok(img_ok_addr, USER_SWAP_IMAGE_OK);
+            if (CY_RSLT_SUCCESS == result)
             {
                 printf("[BlinkyApp] SWAP Status : Image OK was set.\r\n");
             }
@@ -166,12 +158,12 @@ int main(void)
         }
         else
         {
-            printf("[BlinkyApp] Image OK is already set in trailer\r\n");
+            printf("[BlinkyApp] The upgrade image was not marked permanent. Revert swap will happen in the next boot.\r\n");
         }
     }
     else
     {
-        printf("[BlinkyApp] The upgrade image was not marked permanent. Revert swap will happen in the next boot.\r\n");
+        printf("[BlinkyApp] Image OK is already set in trailer\r\n");
     }
 
 #endif
@@ -187,45 +179,6 @@ int main(void)
 
     return 0;
 }
-
-#if (SWAP_ENABLED == 1) && defined(UPGRADE_IMG)
-/******************************************************************************
- * Function Name: flash_write_byte
- ******************************************************************************
- * Summary:
- *  Writes 1 byte `data` into flash memory at `address`
- *  It does a sequence of RD/Modify/WR of data in a Flash Row.
- *
- * Parameters:
- *  uint32_t address : Address in the flash memory where the data is written.
- *  uint8_t data : The value that has to be written in flash.
- *
- * Return:
- *  cy_en_flashdrv_status_t
- *
- ******************************************************************************/
-static cy_en_flashdrv_status_t flash_write_byte(uint32_t address, uint8_t data)
-{
-    cy_en_flashdrv_status_t result = CY_FLASH_DRV_ERR_UNC;
-    uint32_t row_addr = 0;
-    uint8_t row_buff[CY_FLASH_SIZEOF_ROW];
-
-    /* Calculate the starting address of the flash row. */
-    row_addr = (address / CY_FLASH_SIZEOF_ROW) * CY_FLASH_SIZEOF_ROW;
-
-    /* preserving Row */
-    memcpy(row_buff, (void *)row_addr, sizeof(row_buff));
-
-    /* Modifying the target byte */
-    row_buff[address % CY_FLASH_SIZEOF_ROW] = data;
-
-    /* Programming updated row back */
-    result = Cy_Flash_WriteRow(row_addr, (const uint32_t *)row_buff);
-
-    return result;
-}
-#endif  /* (SWAP_ENABLED == 1) && defined(UPGRADE_IMG) */
-
 
 /* [] END OF FILE */
 

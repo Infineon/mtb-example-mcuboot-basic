@@ -67,7 +67,7 @@ MEMORY
      * where 'xx' is the device group; for example, 'cy8c6xx7_cm0plus.ld'.
      */
     ram               (rwx)   : ORIGIN = (0x08000000 + CM0P_RAM_SIZE), LENGTH = (0x48000 - SYS_USE_RAM_SIZE - CM0P_RAM_SIZE)
-    flash             (rx)    : ORIGIN = (0x10000000 + CM0P_FLASH_SIZE), LENGTH = CM4_FLASH_SIZE
+    flash             (rx)    : ORIGIN = USER_APP_START, LENGTH = USER_APP_SIZE
 
     /* This is a 32K flash region used for EEPROM emulation. This region can also be used as the general purpose flash.
      * You can assign sections to this memory region for only one of the cores.
