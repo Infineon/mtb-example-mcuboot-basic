@@ -73,7 +73,7 @@ INCLUDES+=\
     $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/flash_qspi\
     $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/include/flash_map_backend\
     $(MCUBOOT_CY_PATH)/libs/retarget_io_pdl\
-    $(MCUBOOTAPP_PATH)\
+	$(MCUBOOTAPP_PATH)\
     $(MCUBOOTAPP_PATH)/os\
     $(MCUBOOTAPP_PATH)/config\
     $(MCUBOOT_CY_PATH)/libs/watchdog

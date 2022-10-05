@@ -23,39 +23,17 @@
 # limitations under the License.
 ################################################################################
 
+# Include the application make files
+include ../common.mk
+
 ################################################################################
 # Basic Configuration
 ################################################################################
 
-# Target board/hardware (BSP).
-# To change the target, it is recommended to use the Library manager 
-# ('make modlibs' from command line), which will also update Eclipse IDE launch 
-# configurations. If TARGET is manually edited, ensure TARGET_<BSP>.mtb with a 
-# valid URL exists in the application, run 'make getlibs' to fetch BSP contents
-# and update or regenerate launch configurations for your IDE.
-TARGET=CY8CPROTO-062-4343W
+MTB_TYPE=PROJECT
 
 # Name of application (used to derive name of final linked file).
-APPNAME=mtb-example-psoc6-mcuboot-basic-bootloader
-
-# Name of toolchain to use. Options include:
-#
-# GCC_ARM -- GCC provided with ModusToolbox IDE
-# ARM     -- ARM Compiler (must be installed separately)
-# IAR     -- IAR Compiler (must be installed separately)
-#
-# See also: CY_COMPILER_PATH below
-TOOLCHAIN=GCC_ARM
-
-# CPU to target; CM4 is the default CPU when this variable is not present.
-CORE=CM0P
-
-# Default build configuration. Options include:
-#
-# Debug -- build with minimal optimizations, focus on debugging.
-# Release -- build with full optimizations
-# Custom -- build with custom configuration, set the optimization flag in CFLAGS
-CONFIG=Debug
+APPNAME=bootloader_cm0p
 
 # If set to "true" or "1", display full command-lines when building.
 VERBOSE=
@@ -74,19 +52,20 @@ else
 PYTHON_PATH?=python3
 endif
 
-.PHONY: flashmap.mk    
+.PHONY: generate_flashmap_cm0p
 
 # Python command to generate flashmap header file from flashmap JSON file
 ifneq ($(FLASH_MAP), )
-flashmap.mk:
-	@echo -e "\n==============================================================================================================================================================="
+generate_flashmap_cm0p:
+	@echo -e "\n============================================================="
 	@echo -e "= Generating cy_flash_map.h and flashmap.mk using $(FLASH_MAP) file (Look out for any warnings or errors in this step) ="
-	@echo -e "==============================================================================================================================================================="
+	@echo -e "============================================================="
 	$(PYTHON_PATH) ./scripts/flashmap.py -p $(PLATFORM) -i ./flashmap/$(FLASH_MAP) -o ./source/cy_flash_map.h > ./flashmap.mk
-	@echo -e "===============================================================================================================================================================\n"
+	@echo -e "=============================================================\n"
     
 -include ./flashmap.mk
 endif
+
 
 ################################################################################
 # Advanced Configuration
@@ -107,10 +86,14 @@ endif
 include ./app.mk
 
 # Do not define PSOC6HAL component as HAL is not supported for CM0+
-COMPONENTS=CUSTOM_DESIGN_MODUS
+COMPONENTS=
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
-DISABLE_COMPONENTS=BSP_DESIGN_MODUS
+DISABLE_COMPONENTS=
+
+# Set this application to run at the CM0+
+CORE=CM0P
+CORE_NAME=CM0P_0
 
 # The following defines describe the flash map used by MCUBoot
 DEFINES+=CY_BOOT_BOOTLOADER_SIZE=$(BOOTLOADER_SIZE) \
@@ -166,6 +149,7 @@ LDFLAGS=
 # Additional / custom libraries to link in to the application.
 LDLIBS=
 
+
 # Custom pre-build commands to run.
 # MCUboot uses submodules and "make getlibs" currently does not support
 # fetching submodules.
@@ -178,25 +162,23 @@ LDLIBS=
 # files from design.cyqspi file, under GeneratedSource directory. This
 # configuration is used by the programmer to program the external flash. 
 # See cy_serial_flash_prog.c file for details. 
-PREBUILD_VAR=\
+PREBUILD_VAR=+\
 @if [ -n "$$(ls -A $(MBEDTLS_PATH) 2>/dev/null)" ]; then\
     echo "Git submodules for MCUboot exist. Skipping this step...";\
     else\
     echo "Initializing Git Submodules for MCUboot";\
     cd libs/mcuboot;git submodule update --init --recursive;\
 fi;\
-if [ $(USE_EXTERNAL_FLASH) -eq 1 ]; then\
-    $(CY_QSPI_CONFIGURATOR_DIR)/qspi-configurator-cli --config $(wildcard ./COMPONENT_CUSTOM_DESIGN_MODUS/TARGET_$(TARGET)/*.cyqspi);\
-fi;
+$(MAKE) generate_flashmap_cm0p;\
+$(CY_INTERNAL_TOOLS)/qspi-configurator/qspi-configurator-cli --config $(wildcard ../bsps/TARGET_$(TARGET)/config/*.cyqspi);\
 
-PREBUILD= $(PREBUILD_VAR)
+PREBUILD=$(PREBUILD_VAR)
 
 # Custom post-build commands to run.
 POSTBUILD=
 
 # Toolchain specific linker flags
 ifeq ($(TOOLCHAIN), GCC_ARM)
-LINKER_SCRIPT=$(wildcard ./linker_script/TARGET_$(TARGET)/TOOLCHAIN_$(TOOLCHAIN)/*.ld)
 LDFLAGS+=-Wl,--defsym=CM0P_FLASH_SIZE=$(BOOTLOADER_SIZE),--defsym=CM0P_RAM_SIZE=$(BOOTLOADER_APP_RAM_SIZE)
 else
 $(error Only GCC_ARM is supported at this moment)
@@ -218,7 +200,7 @@ CY_APP_PATH=
 # the CY_GETLIBS_SHARED_PATH variable. The default location is one directory level 
 # above the current app directory.
 # This is used with CY_GETLIBS_SHARED_NAME variable, which specifies the directory name.
-CY_GETLIBS_SHARED_PATH=../../
+CY_GETLIBS_SHARED_PATH=../..
 
 # Directory name of the shared repo location.
 #
@@ -230,28 +212,5 @@ CY_GETLIBS_SHARED_NAME=mtb_shared
 # IDE provided compiler by default).
 CY_COMPILER_PATH=
 
-
-# Locate ModusToolbox IDE helper tools folders in default installation
-# locations for Windows, Linux, and macOS.
-CY_WIN_HOME=$(subst \,/,$(USERPROFILE))
-CY_TOOLS_PATHS ?= $(wildcard \
-    $(CY_WIN_HOME)/ModusToolbox/tools_* \
-    $(HOME)/ModusToolbox/tools_* \
-    /Applications/ModusToolbox/tools_*)
-
-# If you install ModusToolbox IDE in a custom location, add the path to its
-# "tools_X.Y" folder (where X and Y are the version number of the tools
-# folder). Make sure you use forward slashes.
-CY_TOOLS_PATHS+=
-
-# Default to the newest installed tools folder, or the users override (if it's
-# found).
-CY_TOOLS_DIR=$(lastword $(sort $(wildcard $(CY_TOOLS_PATHS))))
-
-ifeq ($(CY_TOOLS_DIR),)
-$(error Unable to find any of the available CY_TOOLS_PATHS -- $(CY_TOOLS_PATHS). On Windows, use forward slashes.)
-endif
-
-$(info Tools Directory: $(CY_TOOLS_DIR))
 
 include $(CY_TOOLS_DIR)/make/start.mk
