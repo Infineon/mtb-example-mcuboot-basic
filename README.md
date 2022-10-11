@@ -12,7 +12,7 @@
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc6-mcuboot-basic)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzA2NTAiLCJTcGVjIE51bWJlciI6IjAwMi0zMDY1MCIsIkRvYyBUaXRsZSI6IlBTb0MmdHJhZGU7IDYgTUNVOiBNQ1Vib290LWJhc2VkIGJhc2ljIGJvb3Rsb2FkZXIiLCJyaWQiOiJ2YWlyIiwiRG9jIHZlcnNpb24iOiI1LjAuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzA2NTAiLCJTcGVjIE51bWJlciI6IjAwMi0zMDY1MCIsIkRvYyBUaXRsZSI6IlBTb0MmdHJhZGU7IDYgTUNVOiBNQ1Vib290LWJhc2VkIGJhc2ljIGJvb3Rsb2FkZXIiLCJyaWQiOiJ2YWlyIiwiRG9jIHZlcnNpb24iOiI1LjEuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
 
 ## Requirements
 
@@ -187,7 +187,7 @@ This example bundles two applications - the bootloader app run by CM0+ and the b
       ```
       python -m pip install -r requirements.txt
       ```
-4. Update the value of variable `PLATFORM` in the file _shared_config.mk_ in the folder _< application >/proj_cm0_ as per the kit used. Currently in the Makefile a conditional if-else block is used to automatically select a value based on the kit selected. You can remove it and directly assign a value as per the table shown below.
+4. Update the value of variable `PLATFORM` in the file _shared_config.mk_ in the folder _< application >/bootloader_cm0p_ as per the kit used. Currently in the Makefile a conditional if-else block is used to automatically select a value based on the kit selected. You can remove it and directly assign a value as per the table shown below.
 
    | Kit | PLATFORM variable value |
    | ------ | ------ |
@@ -206,7 +206,8 @@ This example bundles two applications - the bootloader app run by CM0+ and the b
 
    <details open><summary><b>Using CLI</b></summary>
 
-     From the terminal, execute the `make program_proj` command to build and program the application using the default toolchain to the default target. The default toolchain and target are specified in the application's Makefile but you can override those values manually:
+     From the terminal, navigate to _< application >/bootloader_cm0p_ execute the `make program_proj` command to build and program the application using the default toolchain to the default target. The default toolchain and target are specified in the application's Makefile but you can override those values manually:
+
       ```
       make program_proj TOOLCHAIN=<toolchain>
       ```
@@ -234,7 +235,7 @@ This example bundles two applications - the bootloader app run by CM0+ and the b
 
    <details open><summary><b>Using CLI</b></summary>
 
-      From the terminal, go to the *blinky_cm4* directory and execute the `make program_proj` command to build and program the application using the default toolchain to the default target.
+      From the terminal, navigate to _< application >/blinky_cm4_ directory and execute the `make program_proj` command to build and program the application using the default toolchain to the default target.
 
       ```
       make program_proj TOOLCHAIN=<toolchain>
@@ -266,7 +267,7 @@ This example bundles two applications - the bootloader app run by CM0+ and the b
 
    <details open><summary><b>Using CLI</b></summary>
 
-      From the terminal, go to the *blinky_cm4* directory and execute the following command to build the application using the default toolchain to the default target:
+      From the terminal, navigate to _< application >/blinky_cm4_ directory and execute the following command to build the application using the default toolchain to the default target:
 
       ```
       make build_proj -j8 IMG_TYPE=UPGRADE
@@ -277,7 +278,7 @@ This example bundles two applications - the bootloader app run by CM0+ and the b
 
       <details open><summary><b>Using CLI</b></summary>
 
-      From the terminal, go to the *blinky_cm4* directory and execute the following command to program the UPGRADE image using the default toolchain to the default target:
+      From the terminal, navigate to _< application >/blinky_cm4_ directory and execute the following command to program the UPGRADE image using the default toolchain to the default target:
 
       ```
       make program_proj -j8 IMG_TYPE=UPGRADE
@@ -310,6 +311,22 @@ This example bundles two applications - the bootloader app run by CM0+ and the b
     **Figure 4. Booting the blinky app in the UPGRADE mode after successful SWAP operation**
 
     ![](images/booting-after-upgrade-swap.png)
+
+
+**NOTE:** The user can build the combined image for bootloader and blinky_cm4 using the `make build` CLI command in _< application >_ directory but during the linking stage there might be an error stating multiple definition of symbols for blinky_cm4 for `BOOT` and `UPGRADE` image. Currently the solution to the problem has been addressed in the following code section of the _< application >/blinky_cm4/Makefile_ which ignores the build artificats of the other `IMG_TYPE`. Ex: If `BOOT` is selected as `IMG_TYPE` then _< application >/blinky_cm4/build/UPGRADE/_ build directory artificats will be ignored during the compilation and linking of `BOOT` image.
+
+```
+ifeq ($(IMG_TYPE), BOOT)
+CY_IGNORE+=build/UPGRADE
+else
+ifeq ($(IMG_TYPE), UPGRADE)
+CY_IGNORE+=build/BOOT
+endif
+endif
+```
+
+For programming the individual builds of bootloader app and blinky app use the `make program_proj` CLI command as mentioned in the above steps.
+
 
 ## Debugging
 
@@ -538,7 +555,7 @@ You can use the *imgtool* Python module to generate the keys.
 
 The pre-build steps are specified through the `PREBUILD` variable in *bootloader_cm0p/Makefile*.
 
-1. *Initialize the Git submodules for MCUboot:* This is required because the `make getlibs` command currently does not support initializing Git submodules while cloning a repo. This step executes only if the *libs/mcuboot/ext/mbedtls* directory (a submodule) does not exist or if the content of the directory is empty.
+1. *Initialize the Git submodules for MCUboot:* This is required because the _library manager updates_ currently does not support initializing Git submodules while cloning a repo. This step executes only if the *libs/mcuboot/ext/mbedtls* directory (a submodule) does not exist or if the content of the directory is empty.
 
 2. *Generate the external flash configuration files:* This step generates the *cycfg_qspi_memslot.c./h* files under the *bsps/TARGET_< BSP-NAME >/config/GeneratedSource* directory. This step is required because QSPI is not enabled in *design.modus*. This is done to avoid initializing the QSPI block in the generated source because it is initialized in the SFDP mode by the bootloader app in *main.c*. *psoc6make* autogenerates the source files from the configurator tools only if the peripheral is enabled in *design.modus*.
 
@@ -625,6 +642,7 @@ Document title: *CE230650* - *PSoC&trade; 6 MCU: MCUboot-based basic bootloader*
  3.0.0   | Update to support ModusToolbox&trade; software v2.4 and updated to BSP v3.X<br /> Added support for CYW9P62S1-43012EVB-01 and CY8CEVAL-062S2-MUR-43439M2 kits.
  4.0.0   | Update to support MCUboot v1.8.1 changes<br />Swap operation support on all targets<br />XIP operation on all targets supporting external flash.
  5.0.0   | Major update to support ModusToolbox™ v3.0. <br> This version is not backward compatible with previous versions of ModusToolbox&trade; software.
+ 5.1.0   | Minor updates to README
 <br>
 
 ---------------------------------------------------------
