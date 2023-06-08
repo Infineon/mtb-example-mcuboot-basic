@@ -8,7 +8,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company)
+# Copyright 2020-2023, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,31 +49,33 @@ MCUBOOTAPP_PATH=$(MCUBOOT_CY_PATH)/MCUBootApp
 
 SOURCES+=\
     $(wildcard $(MCUBOOT_PATH)/boot/bootutil/src/*.c)\
-    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/cy_flash_map.c)\
+    $(wildcard $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/cy_flash_map.c)\
     $(MCUBOOT_CY_PATH)/libs/retarget_io_pdl/cy_retarget_io_pdl.c\
     $(MCUBOOT_CY_PATH)/libs/watchdog/watchdog.c\
-    $(MCUBOOTAPP_PATH)/cy_security_cnt.c\
+    $(MCUBOOT_CY_PATH)/platforms/security_counter/cy_security_cnt.c\
+    $(wildcard $(MCUBOOT_CY_PATH)/platforms/security_counter/PSOC6/*.c)\
     $(MCUBOOTAPP_PATH)/keys.c\
     $(MCUBOOTAPP_PATH)/cy_serial_flash_prog.c
 
 # Do not include QSPI API from flash PAL when external flash is not used.
 ifeq ($(USE_EXTERNAL_FLASH), 1)  
 SOURCES+=\
-    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/cy_smif_psoc6.c)\
-    $(wildcard $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/flash_qspi/*.c)
+    $(wildcard $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/cy_smif_psoc6.c)\
+    $(wildcard $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/flash_qspi/*.c)
 endif
     
 INCLUDES+=\
     ./keys\
     $(MCUBOOT_PATH)/boot/bootutil/include\
     $(MCUBOOT_PATH)/boot/bootutil/src\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal/sysflash\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/include\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/flash_qspi\
-    $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/include/flash_map_backend\
+    $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal\
+    $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/sysflash\
+    $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/include\
+    $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/flash_qspi\
+    $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/include/flash_map_backend\
     $(MCUBOOT_CY_PATH)/libs/retarget_io_pdl\
-	$(MCUBOOTAPP_PATH)\
+    $(MCUBOOTAPP_PATH)\
     $(MCUBOOTAPP_PATH)/os\
     $(MCUBOOTAPP_PATH)/config\
-    $(MCUBOOT_CY_PATH)/libs/watchdog
+    $(MCUBOOT_CY_PATH)/libs/watchdog\
+    $(MCUBOOT_CY_PATH)/platforms/security_counter/PSOC6/

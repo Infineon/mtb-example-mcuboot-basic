@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2022, Cypress Semiconductor Corporation (an Infineon company)
+# Copyright 2022-2023, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,14 @@ CY_TOOLS_PATHS ?= $(wildcard \
     $(CY_WIN_HOME)/ModusToolbox/tools_* \
     $(HOME)/ModusToolbox/tools_* \
     /Applications/ModusToolbox/tools_*)
+
+# Absolute path to the compiler's "bin" directory. The variable name depends on the 
+# toolchain used for the build. Refer to the ModusToolbox user guide to get the correct
+# variable name for the toolchain used in your build.
+# 
+# The default depends on the selected TOOLCHAIN (GCC_ARM uses the ModusToolbox
+# software provided compiler by default).
+CY_COMPILER_GCC_ARM_DIR=
 
 # If you install ModusToolbox IDE in a custom location, add the path to its
 # "tools_X.Y" folder (where X and Y are the version number of the tools

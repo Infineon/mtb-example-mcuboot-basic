@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company)
+# Copyright 2020-2023, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,7 +58,7 @@ endif
 ifneq ($(FLASH_MAP), )
 generate_flashmap_cm0p:
 	@echo -e "\n============================================================="
-	@echo -e "= Generating cy_flash_map.h and flashmap.mk using $(FLASH_MAP) file (Look out for any warnings or errors in this step) ="
+	@echo -e "= Generating cy_flash_map.h and flashmap.mk ="
 	@echo -e "============================================================="
 	$(PYTHON_PATH) ./scripts/flashmap.py -p $(PLATFORM) -i ./flashmap/$(FLASH_MAP) -o ./source/cy_flash_map.h > ./flashmap.mk
 	@echo -e "=============================================================\n"
@@ -106,7 +106,8 @@ DEFINES+=MBEDTLS_CONFIG_FILE='"mcuboot_crypto_config.h"' \
          MCUBOOT_MAX_IMG_SECTORS=$(MAX_IMG_SECTORS) \
          MCUBOOT_LOG_LEVEL=MCUBOOT_LOG_LEVEL_INFO \
          $(FAMILY) \
-         $(PLATFORM)
+         $(PLATFORM) \
+         CYBSP_CUSTOM_SYSCLK_PM_CALLBACK=1
 
 # Add defines to enable image overwrite operation
 ifeq ($(USE_OVERWRITE), 1)
@@ -205,12 +206,5 @@ CY_GETLIBS_SHARED_PATH=../..
 # Directory name of the shared repo location.
 #
 CY_GETLIBS_SHARED_NAME=mtb_shared
-
-# Absolute path to the compiler's "bin" directory.
-#
-# The default depends on the selected TOOLCHAIN (GCC_ARM uses the ModusToolbox
-# IDE provided compiler by default).
-CY_COMPILER_PATH=
-
 
 include $(CY_TOOLS_DIR)/make/start.mk

@@ -48,7 +48,7 @@ STACK_SIZE = 0x1000;
 
 /* By default, the COMPONENT_CM0P_SLEEP prebuilt image is used for the CM0p core.
 * More about CM0+ prebuilt images, see here:
-* https://github.com/cypresssemiconductorco/psoc6cm0p
+* https://github.com/Infineon/psoc6cm0p
 */
 /* The size of the Cortex-M0+ application image at the start of FLASH */
 FLASH_CM0P_SIZE  = 0x2000;

@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company)
+# Copyright 2020-2023, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,7 +60,7 @@ endif
 ifneq ($(FLASH_MAP), )
 generate_flashmap_cm4:
 	@echo -e "\n==============================================================================================================================================================="
-	@echo -e "= Generating flashmap.mk using $(FLASH_MAP) file (Look out for any warnings or errors in this step) ="
+	@echo -e "= Generating flashmap.mk ="
 	@echo -e "==============================================================================================================================================================="
 	$(PYTHON_PATH) ../bootloader_cm0p/scripts/flashmap.py -p $(PLATFORM) -i ../bootloader_cm0p/flashmap/$(FLASH_MAP) -o ./source/cy_flash_map.h -d 1 > ./flashmap.mk
 	@echo -e "===============================================================================================================================================================\n"
@@ -158,15 +158,15 @@ CORE_NAME=CM4_0
 # by default, or otherwise not found by the build system.
 SOURCES+=$(wildcard $(SEARCH_mcuboot)/boot/bootutil/src/*.c)\
          $(wildcard $(MCUBOOT_CY_PATH)/libs/watchdog/*.c)\
-         $(wildcard $(MCUBOOT_CY_PATH)/platforms/$(FAMILY)/img_confirm/*.c)
+         $(wildcard $(MCUBOOT_CY_PATH)/platforms/img_confirm/$(FAMILY)/*.c)
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
 INCLUDES+=$(SEARCH_mcuboot)/boot/bootutil/include\
           $(SEARCH_mcuboot)/boot/bootutil/src\
-          $(MCUBOOT_CY_PATH)/cy_flash_pal\
-          $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/include\
-          $(MCUBOOT_CY_PATH)/cy_flash_pal/flash_psoc6/flash_qspi\
+          $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal\
+          $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/include\
+          $(MCUBOOT_CY_PATH)/platforms/cy_flash_pal/flash_psoc6/flash_qspi\
           $(MCUBOOTAPP_PATH)\
           $(MCUBOOTAPP_PATH)/config\
           $(MBEDTLS_PATH)/include\
@@ -217,7 +217,7 @@ PREBUILD=
 
 # Path to the linker script to use and other linker options.
 ifeq ($(TOOLCHAIN), GCC_ARM)
-LINKER_SCRIPT=$(wildcard ../bsps/TARGET_$(TARGET)/COMPONENT_CM4/TOOLCHAIN_$(TOOLCHAIN)/*cm4$(LD_SUFFIX).ld)
+LINKER_SCRIPT=$(wildcard ../bsps/TARGET_$(TARGET)/COMPONENT_CM4/TOOLCHAIN_$(TOOLCHAIN)/linker$(LD_SUFFIX).ld)
 LDFLAGS+=-Wl,--defsym=MCUBOOT_HEADER_SIZE=$(MCUBOOT_HEADER_SIZE)
 LDFLAGS+=-Wl,--defsym=CM0P_FLASH_SIZE=$(BOOTLOADER_SIZE),--defsym=CM0P_RAM_SIZE=$(BOOTLOADER_APP_RAM_SIZE)
 LDFLAGS+=-Wl,--defsym=USER_APP_START=$(PRIMARY_IMG_START),--defsym=USER_APP_SIZE=$(SLOT_SIZE)
@@ -304,9 +304,9 @@ CY_APP_PATH=
 
 # Relative path to the shared repo location.
 #
-# All .mtb files have the format, <URI>#<COMMIT>#<LOCATION>. If the <LOCATION> field
-# begins with $$ASSET_REPO$$, then the repo is deposited in the path specified by
-# the CY_GETLIBS_SHARED_PATH variable. The default location is one directory level
+# All .mtb files have the format, <URI>#<COMMIT>#<LOCATION>. If the <LOCATION> field 
+# begins with $$ASSET_REPO$$, then the repo is deposited in the path specified by 
+# the CY_GETLIBS_SHARED_PATH variable. The default location is one directory level 
 # above the current app directory.
 # This is used with CY_GETLIBS_SHARED_NAME variable, which specifies the directory name.
 CY_GETLIBS_SHARED_PATH=../..
@@ -314,11 +314,5 @@ CY_GETLIBS_SHARED_PATH=../..
 # Directory name of the shared repo location.
 #
 CY_GETLIBS_SHARED_NAME=mtb_shared
-
-# Absolute path to the compiler's "bin" directory.
-#
-# The default depends on the selected TOOLCHAIN (GCC_ARM uses the ModusToolbox
-# IDE provided compiler by default).
-CY_COMPILER_PATH=
 
 include $(CY_TOOLS_DIR)/make/start.mk

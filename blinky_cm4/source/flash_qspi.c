@@ -1,51 +1,76 @@
-/******************************************************************************
-* File Name:   flash_qspi.c
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+/***************************************************************************//**
+* \file flash_qspi.c
+* \version 1.0
 *
-* Description: This is the source file of external flash driver adaptation layer
-*              between PSoC6 and standard MCUBoot code.
+* \brief
+*  This is the source file of external flash driver adaptation layer between PSoC6
+*  and standard MCUBoot code.
 *
-* Related Document: See README.md
+********************************************************************************
+* \copyright
 *
-*******************************************************************************
-* Copyright 2020-2022, Cypress Semiconductor Corporation (an Infineon company) or
-* an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
+* (c) 2020, Cypress Semiconductor Corporation
+* or a subsidiary of Cypress Semiconductor Corporation. All rights
+* reserved.
 *
 * This software, including source code, documentation and related
-* materials ("Software") is owned by Cypress Semiconductor Corporation
-* or one of its affiliates ("Cypress") and is protected by and subject to
-* worldwide patent protection (United States and foreign),
+* materials ("Software"), is owned by Cypress Semiconductor
+* Corporation or one of its subsidiaries ("Cypress") and is protected by
+* and subject to worldwide patent protection (United States and foreign),
 * United States copyright laws and international treaty provisions.
 * Therefore, you may use this Software only as provided in the license
 * agreement accompanying the software package from which you
 * obtained this Software ("EULA").
-* If no EULA applies, Cypress hereby grants you a personal, non-exclusive,
-* non-transferable license to copy, modify, and compile the Software
-* source code solely for use in connection with Cypress's
-* integrated circuit products.  Any reproduction, modification, translation,
+*
+* If no EULA applies, Cypress hereby grants you a personal, non-
+* exclusive, non-transferable license to copy, modify, and compile the
+* Software source code solely for use in connection with Cypress?s
+* integrated circuit products. Any reproduction, modification, translation,
 * compilation, or representation of this Software except as specified
 * above is prohibited without the express written permission of Cypress.
 *
-* Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress
-* reserves the right to make changes to the Software without notice. Cypress
-* does not assume any liability arising out of the application or use of the
-* Software or any product or circuit described in the Software. Cypress does
-* not authorize its products for use in any products where a malfunction or
+* Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO
+* WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING,
+* BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+* PARTICULAR PURPOSE. Cypress reserves the right to make
+* changes to the Software without notice. Cypress does not assume any
+* liability arising out of the application or use of the Software or any
+* product or circuit described in the Software. Cypress does not
+* authorize its products for use in any products where a malfunction or
 * failure of the Cypress product may reasonably be expected to result in
 * significant property damage, injury or death ("High Risk Product"). By
 * including Cypress's product in a High Risk Product, the manufacturer
 * of such system or application assumes all risk of such use and in doing
 * so agrees to indemnify Cypress against all liability.
-*******************************************************************************/
-
+*
+******************************************************************************/
 #include "cy_pdl.h"
 #include <stdio.h>
 #include "flash_qspi.h"
 
-#define CY_SMIF_SYSCLK_HFCLK_DIVIDER     CY_SYSCLK_CLKHF_DIVIDE_BY_4
+#define CY_SMIF_SYSCLK_HFCLK_DIVIDER     CY_SYSCLK_CLKHF_DIVIDE_BY_2
 
 #define CY_SMIF_INIT_TRY_COUNT           (10U)
+#define CY_CHECK_MEMORY_AVAILABILITY_DELAY_US (1000U)
 
 /* This is the board specific stuff that should align with your board.
  *
@@ -75,17 +100,8 @@ struct qspi_ss_config
     en_hsiom_sel_t SS_Mux;
 };
 
-#if (defined(PSOC_064_2M) || \
-    defined(PSOC_064_1M) || \
-    defined(PSOC_062_2M) || \
-    defined(PSOC_062_1M))
-    #define CY_BOOTLOADER_SMIF_SS_CFG_NUM 4
-#elif defined(PSOC_064_512K) || defined(PSOC_062_512K) || defined(CYW20829)
-    #define CY_BOOTLOADER_SMIF_SS_CFG_NUM 3
-#else
-#error "Platform device name is unsupported."
-#endif
-static struct qspi_ss_config qspi_SS_Configuration[CY_BOOTLOADER_SMIF_SS_CFG_NUM] =
+
+static struct qspi_ss_config qspi_SS_Configuration[SMIF_CHIP_TOP_SPI_SEL_NR] =
 {
     {
         .SS_Port = GPIO_PRT11,
@@ -102,7 +118,7 @@ static struct qspi_ss_config qspi_SS_Configuration[CY_BOOTLOADER_SMIF_SS_CFG_NUM
         .SS_Pin = 0u,
         .SS_Mux = P11_0_SMIF_SPI_SELECT2
     },
-#if(CY_BOOTLOADER_SMIF_SS_CFG_NUM > 3)
+#if(SMIF_CHIP_TOP_SPI_SEL_NR > 3)
     {
         .SS_Port = GPIO_PRT12,
         .SS_Pin = 4u,
@@ -153,7 +169,7 @@ static cy_stc_smif_mem_cmd_t readsts0;
 static cy_stc_smif_mem_cmd_t readstsqecmd0;
 static cy_stc_smif_mem_cmd_t writestseqcmd0;
 
-static cy_stc_smif_mem_device_cfg_t dev_sfdp_0 =
+cy_stc_smif_mem_device_cfg_t dev_sfdp_0 =
 {
     .numOfAddrBytes = 4,
     .readSfdpCmd = &sfdpcmd,
@@ -168,7 +184,7 @@ static cy_stc_smif_mem_device_cfg_t dev_sfdp_0 =
     .writeStsRegQeCmd = &writestseqcmd0,
 };
 
-static cy_stc_smif_mem_config_t mem_sfdp_0 =
+cy_stc_smif_mem_config_t mem_sfdp_0 =
 {
     /* The base address the memory slave is mapped to in the PSoC memory map.
     Valid when the memory-mapped mode is enabled. */
@@ -183,7 +199,7 @@ static cy_stc_smif_mem_config_t mem_sfdp_0 =
 };
 
 
-static cy_stc_smif_mem_config_t *mems_sfdp[1] =
+cy_stc_smif_mem_config_t *mems_sfdp[1] =
 {
     &mem_sfdp_0
 };
@@ -209,8 +225,12 @@ static cy_stc_smif_config_t const QSPI_config =
 #ifdef CM0P
 static cy_stc_sysint_t smifIntConfig =
 {/* ATTENTION: make sure proper Interrupts configured for CM0p or M4 cores */
+#if (CY_CPU_CORTEX_M0P)
     .intrSrc = NvicMux7_IRQn,
     .cm0pSrc = smif_interrupt_IRQn,
+#else
+    .intrSrc = smif_interrupt_IRQn,
+#endif
     .intrPriority = 1
 };
 #endif
@@ -358,6 +378,9 @@ cy_en_smif_status_t qspi_init_hardware(void)
         return st;
     }
 
+    /* Set the polling delay in micro seconds to check memory device availability */
+    Cy_SMIF_SetReadyPollingDelay(CY_CHECK_MEMORY_AVAILABILITY_DELAY_US, &QSPI_context);
+
 #ifdef CM0P
     NVIC_EnableIRQ(smifIntConfig.intrSrc); /* Finally, Enable the SMIF interrupt */
 #endif
@@ -416,13 +439,13 @@ cy_en_smif_status_t qspi_init_sfdp(uint32_t smif_id)
     case 3:
         (*memCfg)->slaveSelect = CY_SMIF_SLAVE_SELECT_2;
         break;
-#if(CY_BOOTLOADER_SMIF_SS_CFG_NUM > 3)
+#if(SMIF_CHIP_TOP_SPI_SEL_NR > 3)
     case 4:
         (*memCfg)->slaveSelect = CY_SMIF_SLAVE_SELECT_3;
         break;
 #endif
     default:
-        stat = -1;
+        stat = CY_SMIF_BAD_PARAM;
         break;
     }
 
