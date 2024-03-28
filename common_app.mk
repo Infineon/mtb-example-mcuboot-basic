@@ -27,7 +27,7 @@
 # Paths
 ################################################################################
 
-# Locate ModusToolbox IDE helper tools folders in default installation
+# Locate ModusToolbox software helper tools folders in default installation
 # locations for Windows, Linux, and macOS.
 CY_WIN_HOME=$(subst \,/,$(USERPROFILE))
 CY_TOOLS_PATHS ?= $(wildcard \
@@ -43,7 +43,7 @@ CY_TOOLS_PATHS ?= $(wildcard \
 # software provided compiler by default).
 CY_COMPILER_GCC_ARM_DIR=
 
-# If you install ModusToolbox IDE in a custom location, add the path to its
+# If you install ModusToolbox software in a custom location, add the path to its
 # "tools_X.Y" folder (where X and Y are the version number of the tools
 # folder).
 CY_TOOLS_PATHS+=

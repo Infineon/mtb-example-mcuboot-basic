@@ -46,13 +46,6 @@ SYS_USE_RAM_SIZE = 0x800;
 /* The size of the stack section at the end of CM4 SRAM */
 STACK_SIZE = 0x1000;
 
-/* By default, the COMPONENT_CM0P_SLEEP prebuilt image is used for the CM0p core.
-* More about CM0+ prebuilt images, see here:
-* https://github.com/Infineon/psoc6cm0p
-*/
-/* The size of the Cortex-M0+ application image at the start of FLASH */
-FLASH_CM0P_SIZE  = 0x2000;
-
 /* Force symbol to be entered in the output file as an undefined symbol. Doing
 * this may, for example, trigger linking of additional modules from standard
 * libraries. You may list several symbols for each EXTERN, and you may use
@@ -132,7 +125,6 @@ GROUP(libgcc.a libc.a libm.a libnosys.a)
 
 SECTIONS
 {
-
     /* Cortex-M4 application flash area */
     .text ORIGIN(flash) + MCUBOOT_HEADER_SIZE :
     {

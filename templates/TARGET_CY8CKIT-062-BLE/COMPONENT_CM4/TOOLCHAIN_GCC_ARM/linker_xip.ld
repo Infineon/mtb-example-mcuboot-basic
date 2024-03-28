@@ -19,7 +19,7 @@
 *
 ********************************************************************************
 * \copyright
-* Copyright 2016-2020 Cypress Semiconductor Corporation
+* Copyright 2016-2023 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,7 +68,7 @@ MEMORY
      */
     ram               (rwx)   : ORIGIN = (0x08000000 + CM0P_RAM_SIZE), LENGTH = (0x48000 - SYS_USE_RAM_SIZE - CM0P_RAM_SIZE)
     flash             (rx)    : ORIGIN = USER_APP_START, LENGTH = USER_APP_SIZE
-
+    
     /* This is a 32K flash region used for EEPROM emulation. This region can also be used as the general purpose flash.
      * You can assign sections to this memory region for only one of the cores.
      * Note some middleware (e.g. BLE, Emulated EEPROM) can place their data into this memory region.
@@ -140,7 +140,7 @@ SECTIONS
         
         EXCLUDE_FILE(*cy_smif.o *cy_smif_memslot.o *cy_smif_sfdp.o
                 *cy_sysclk.o *cy_smif_hybrid_sect.o *flash_qspi.o
-                *cy_syslib.o *cy_syslib_gcc.o *system_psoc6_cm4.o) *(.text)
+                *cy_syslib.o *cy_syslib_ext.o *system_psoc6_cm4.o *libgcc.a) *(.text)
 
         KEEP(*(.init))
         KEEP(*(.fini))
@@ -259,6 +259,7 @@ SECTIONS
         KEEP(*(.cy_ramfunc*))
         . = ALIGN(4);
 
+        *libgcc.a(.text*)
         *cy_smif.o(.text*)
         *cy_smif_memslot.o(.text*)
         *cy_smif_sfdp.o(.text*)
@@ -266,8 +267,8 @@ SECTIONS
         *cy_smif_hybrid_sect.o(.text*)
         *flash_qspi.o(.text*)
         *cy_syslib.o(.text*)
-        *cy_syslib_gcc.o(.text*)   
-	
+        *cy_syslib_ext.o(.text*)
+
         __data_end__ = .;
 
     } > ram AT>flash
@@ -314,7 +315,7 @@ SECTIONS
         . = ORIGIN(ram) + LENGTH(ram) - STACK_SIZE;
         __HeapLimit = .;
     } > ram
-
+	
 
     /* .stack_dummy section doesn't contains any symbols. It is only
      * used for linker to calculate size of stack sections, and assign

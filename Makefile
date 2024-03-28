@@ -29,7 +29,7 @@
 
 MTB_TYPE=APPLICATION
 
-MTB_PROJECTS=bootloader_cm0p blinky_cm4
+MTB_PROJECTS=bootloader_app blinky_app
 
 include common_app.mk
 
