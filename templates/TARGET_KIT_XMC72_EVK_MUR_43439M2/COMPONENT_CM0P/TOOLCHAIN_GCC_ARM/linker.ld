@@ -1,5 +1,5 @@
 /***************************************************************************//**
-* \file xmc7200d_x8384_cm0plus.ld
+* \file xmc7200_x8384_cm0plus.ld
 * \version 1.0.0
 *
 * Linker file for the GNU C compiler.
@@ -41,7 +41,7 @@ SEARCH_DIR(.)
 GROUP(libgcc.a libc.a libm.a libnosys.a)
 ENTRY(Reset_Handler)
 
-/* The size of the stack section at the end of CM7 SRAM */
+/* The size of the stack section at the end of CM7_x SRAM */
 STACK_SIZE = 0x1000;
 RAMVECTORS_ALIGNMENT                = 128;
 
@@ -102,7 +102,7 @@ MEMORY
      */
     cm0_ram         (rxw)       : ORIGIN = _base_SRAM_CM0P,             LENGTH = _size_SRAM_CM0P
     cm0_flash       (rx)        : ORIGIN = _base_CODE_FLASH_CM0P,       LENGTH = _size_CODE_FLASH_CM0P
-    
+
     /* This is a 256K flash region used for EEPROM emulation. This region can also be used as the general purpose flash.
      * You can assign sections to this memory region for only one of the cores.
      */
@@ -116,8 +116,8 @@ MEMORY
     sflash_toc_2        (rx)        : ORIGIN = _base_SFLASH_TOC2,           LENGTH = _size_SFLASH_TOC2          /* Supervisory flash: Table of Content # 2 */
     xip                 (rx)        : ORIGIN = _base_XIP,                   LENGTH = _size_XIP                  /* XIP: 128 MB */
     efuse               (rx)        : ORIGIN = _base_EFUSE,                 LENGTH = _size_EFUSE                /* 1MB */
-    cm7_0_flash     (rx)        : ORIGIN = _base_CODE_FLASH_CM7_0,      LENGTH = _size_CODE_FLASH_CM7_0
-    cm7_1_flash     (rx)        : ORIGIN = _base_CODE_FLASH_CM7_1,      LENGTH = _size_CODE_FLASH_CM7_1
+    cm7_0_flash         (rx)        : ORIGIN = _base_CODE_FLASH_CM7_0,      LENGTH = _size_CODE_FLASH_CM7_0
+    cm7_1_flash         (rx)        : ORIGIN = _base_CODE_FLASH_CM7_1,      LENGTH = _size_CODE_FLASH_CM7_1
 }
 
 /* Library configurations */
@@ -130,7 +130,7 @@ SECTIONS
         __app_header_start = .;
         KEEP(*(.cy_app_header))
     } > cm0_flash
-    
+
     /* Cortex-M0+ application flash area */
     .text :
     {
@@ -195,7 +195,7 @@ SECTIONS
         /* Copy data section to RAM */
         LONG (__etext)                                      /* From */
         LONG (__data_start__)                               /* To   */
-        LONG ((__data_end__ - __data_start__) / 4)          /* Size */
+        LONG ((__data_end__ - __data_start__)/4)            /* Size */
 
         __copy_table_end__ = .;
     } > cm0_flash
@@ -209,7 +209,7 @@ SECTIONS
         . = ALIGN(4);
         __zero_table_start__ = .;
         LONG (__bss_start__)
-        LONG ((__bss_end__ - __bss_start__) / 4)
+        LONG ((__bss_end__ - __bss_start__)/4)
         __zero_table_end__ = .;
     } > cm0_flash
 
@@ -354,11 +354,13 @@ SECTIONS
         KEEP(*(.cy_sflash_nar))
     } > sflash_nar
 
+
     /* Supervisory Flash: Public Key */
     .cy_sflash_public_key :
     {
         KEEP(*(.cy_sflash_public_key))
     } > sflash_public_key
+
 
     /* Supervisory Flash: Table of Content # 2 */
     .cy_toc_part2 :
@@ -375,6 +377,7 @@ SECTIONS
         KEEP(*(.cy_xip))
         __cy_xip_end = .;
     } > xip
+
 
     /* eFuse */
     .cy_efuse :
@@ -420,14 +423,14 @@ __ecc_init_sram_end_address   = ORIGIN(cm0_ram) + LENGTH(cm0_ram);
  * Symbols for use by secure config
  *============================================================
  */
-__secure_object_size = __app_image_end - __app_header_start;
+__secure_object_size       = __app_image_end - __app_header_start;
 __app_header_vtable_offset = __Vectors - __app_header_start;
 
 /*============================================================
  * Symbols for use by cymcuelftool
  *============================================================
  */
-__cy_app_verify_start = ORIGIN(cm0_flash);
+__cy_app_verify_start  = ORIGIN(cm0_flash);
 __cy_app_verify_length = __secure_object_size;
 
 /* Check application header placement */

@@ -1,5 +1,5 @@
 /***************************************************************************//**
-* \file xmc7200_x8384_cm0plus.ld
+* \file xmc7100_x4160_cm0plus.ld
 * \version 1.0.0
 *
 * Linker file for the GNU C compiler.

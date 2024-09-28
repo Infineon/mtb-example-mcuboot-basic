@@ -1,5 +1,5 @@
 /***************************************************************************//**
-* \file xmc7200d_x8384_cm7.ld
+* \file xmc7200_x8384_cm7.ld
 * \version 1.0.0
 *
 * Linker file for the GNU C compiler.
@@ -52,9 +52,9 @@ sram_private_for_srom               = 0x00000800; /* Private SRAM for SROM (e.g.
 sram_used_by_boot                   = 0x0; /* Used during boot by Cypress firmware (content will be overwritten on reset, so it should not be used for loadable sections in case of RAM build configurations) */
 
 cm0plus_sram_reserve                = CM0P_RAM_SIZE; /* cm0 sram size */
-cm7_sram_reserve                    = 0x00060000; /* cm7_1 sram size */
+cm7_sram_reserve                    = 0x00060000; /* 384K: cm7_1 sram size */
 
-code_flash_total_size               = 0x00830000;
+code_flash_total_size               = 0x00830000; /* 8384K: total flash size */
 cm0plus_code_flash_reserve          = CM0P_FLASH_SIZE;
 cm7_code_flash_reserve              = USER_APP_SIZE;
 
@@ -113,7 +113,6 @@ _base_DTCM                          = DEFINED(_CORE_CM7_1_) ? _base_CM7_1_DTCM :
 _size_DTCM                          = DEFINED(_CORE_CM7_1_) ? _size_CM7_1_DTCM : DEFINED(_CORE_CM7_0_) ? _size_CM7_0_DTCM  : ASSERT(1<1, "Error: Either_CORE_CM7_0_ or _CORE_CM7_1_ not defined");
 
 
-
 /* Force symbol to be entered in the output file as an undefined symbol. Doing
 * this may, for example, trigger linking of additional modules from standard
 * libraries. You may list several symbols for each EXTERN, and you may use
@@ -135,7 +134,6 @@ MEMORY
 
     /* This is a 256K flash region used for EEPROM emulation. This region can also be used as the general purpose flash.
      * You can assign sections to this memory region for only one of the cores.
-    /* The ram and flash regions control RAM and flash memory allocation for the CM33 core.
      */
     em_eeprom           (rw)        : ORIGIN = _base_WORK_FLASH,            LENGTH = _size_WORK_FLASH           /* WORK flash */
 
@@ -228,8 +226,8 @@ SECTIONS
         /* Copy data section to RAM */
         LONG (__etext)                                      /* From */
         LONG (__data_start__)                               /* To   */
-        LONG ((__data_end__ - __data_start__) / 4)          /* Size */
-        
+        LONG ((__data_end__ - __data_start__)/4)            /* Size */
+
         /* Copy code to ITCM */
         LONG (__zero_table_end__)                           /* From */
         LONG (__itcm_start__)                                     /* To   */
@@ -249,7 +247,7 @@ SECTIONS
         . = ALIGN(4);
         __zero_table_start__ = .;
         LONG (__bss_start__)
-        LONG ((__bss_end__ - __bss_start__) / 4)
+        LONG ((__bss_end__ - __bss_start__)/4)
         __zero_table_end__ = .;
     } > flash
 
@@ -386,7 +384,7 @@ SECTIONS
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
 
-    
+
     /* Emulated EEPROM Flash area */
     .cy_em_eeprom :
     {
@@ -437,6 +435,7 @@ SECTIONS
     {
         KEEP(*(.cy_efuse))
     } > efuse
+
 }
 
 

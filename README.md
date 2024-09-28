@@ -1,8 +1,8 @@
 # MCUboot-based basic bootloader
 
-[MCUboot](https://github.com/mcu-tools/mcuboot) is an open-source library enabling the development of secure bootloader applications for 32-bit MCUs. MCUboot is the primary bootloader in popular IoT operating systems such as Zephyr and Apache Mynewt. This code example demonstrates a bootloader using MCUboot with PSoC&trade; 62 and XMC7200 MCUs. This code example bundles two applications:
+[MCUboot](https://github.com/mcu-tools/mcuboot) is an open-source library enabling the development of secure bootloader applications for 32-bit MCUs. MCUboot is the primary bootloader in popular IoT operating systems such as Zephyr and Apache Mynewt. This code example demonstrates a bootloader using MCUboot with PSoC&trade; 62 and XMC7000 MCUs. This code example bundles two applications:
 
-- **Bootloader app:** Implements an MCUboot-based basic bootloader application run by CM0P core. The bootloader handles image authentication and upgrades it. When the image is valid, the bootloader lets the CM4 or CM7 core, boot the image by passing the starting address of the primary slot.
+- **Bootloader app:** Implements an MCUboot-based basic bootloader application run by CM0+ (CM0P) core. The bootloader handles image authentication and upgrades it. When the image is valid, the bootloader lets the CM4 or CM7 core, boot the image by passing the starting address of the primary slot.
 
 - **Blinky app:** Implements a simple LED blinky application run by CM4 or CM7 core. You can build this application in one of the following ways. The application toggles the user LED at different rates depending on whether it is built-in BOOT or UPGRADE modes.
 
@@ -12,14 +12,14 @@
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-mcuboot-basic)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzA2NTAiLCJTcGVjIE51bWJlciI6IjAwMi0zMDY1MCIsIkRvYyBUaXRsZSI6Ik1DVWJvb3QtYmFzZWQgYmFzaWMgYm9vdGxvYWRlciIsInJpZCI6ImNoZXR0aWFubmFuIiwiRG9jIHZlcnNpb24iOiI3LjEuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiV0lGSSJ9)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzA2NTAiLCJTcGVjIE51bWJlciI6IjAwMi0zMDY1MCIsIkRvYyBUaXRsZSI6Ik1DVWJvb3QtYmFzZWQgYmFzaWMgYm9vdGxvYWRlciIsInJpZCI6InZhaXIiLCJEb2MgdmVyc2lvbiI6IjcuMi4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJXSUZJIn0=)
 
 ## Requirements
 
-- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.1 or later (tested with v3.2)
+- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.2 or later (tested with v3.2)
 - Board support package (BSP) minimum required version: 4.0.0
 - Programming language: C
-- Other tools: Python v3.8.10 or later
+- Other tools: Python v3.12.4
 - Associated parts: All [XMC7000 MCU](https://www.infineon.com/cms/en/product/microcontroller/32-bit-industrial-microcontroller-based-on-arm-cortex-m/) and [PSoC&trade; 6 MCU](https://www.infineon.com/cms/en/product/microcontroller/32-bit-psoc-arm-cortex-microcontroller/psoc-6-32-bit-arm-cortex-m4-mcu) parts, [AIROC&trade; CYW43012 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43012), [AIROC&trade; CYW4343W Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw4343w), [AIROC&trade; CYW4373 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-5-802.11ac/cyw4373), [AIROC&trade; CYW43439 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43439)
 
 ## Supported toolchains (make variable 'TOOLCHAIN')
@@ -37,7 +37,8 @@
 - [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CYW9P62S1-43438EVB-01) (`CYW9P62S1-43438EVB-01`)
 - [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CYW9P62S1-43012EVB-01) (`CYW9P62S1-43012EVB-01`)
 - [PSoC&trade; 62S2 Evaluation Kit](https://www.infineon.com/CY8CEVAL-062S2) (`CY8CEVAL-062S2`, `CY8CEVAL-062S2-LAI-4373M2`, `CY8CEVAL-062S2-LAI-43439M2`, `CY8CEVAL-062S2-MUR-43439M2`, `CY8CEVAL-062S2-MUR-4373EM2`, `CY8CEVAL-062S2-MUR-4373M2`, `CY8CEVAL-062S2-CYW43022CUB`,`CY8CEVAL-062S2-CYW955513SDM2WLIPA`)
-- [XMC7200 Evaluation Kit](https://www.infineon.com/KIT_XMC72_EVK) (`KIT_XMC72_EVK`) (`KIT_XMC72_EVK_MUR_43439M2`)
+- [XMC7200 Evaluation Kit](https://www.infineon.com/KIT_XMC72_EVK) (`KIT_XMC72_EVK`, `KIT_XMC72_EVK_MUR_43439M2`)
+- [XMC7100 Evaluation Kit](https://www.infineon.com/KIT_XMC71_EVK_LITE_V1) (`KIT_XMC71_EVK_LITE_V1`)
 
 ## Hardware setup
 
@@ -49,7 +50,7 @@ This example uses the board's default configuration. See the kit user guide to e
 
 See the [ModusToolbox&trade; tools package installation guide](https://www.infineon.com/ModusToolboxInstallguide) for information about installing and configuring the tools package.
 1. Install a terminal emulator if you don't have one. Instructions in this document use [Tera Term](https://teratermproject.github.io/index-en.html).
-2. Install the Python interpreter and add it to the top of the system path in environmental variables. This code example is tested with [Python v3.8.10](https://www.python.org/downloads/release/python-3810/).
+2. Install the Python interpreter and add it to the top of the system path in environmental variables. This code example is tested with [Python v3.12.4](https://www.python.org/downloads/release/python-3124/).
 
 > **Note:** This code example currently does not work with the custom BSP name for the XMC7000 family. If you want to change the BSP name to a non-default value, ensure to update the custom BSP name in *user_config.mk* file under  the relevant section. The build fails, if you do not update the custom BSP name.
 
@@ -162,9 +163,9 @@ For more details, see the [ModusToolbox&trade; tools package user guide](https:/
 
 This readme expects you to be familiar with MCUboot and its concepts. See [MCUboot documentation](https://github.com/mcu-tools/mcuboot) to learn more.
 
-This example bundles two applications - the bootloader application run by CM0P core and the blinky application run by CM4 or CM7 core. You need to build and program the applications in the following order. Follow the [Step-by-step instructions](#step-by-step-instructions) to start building the application.
+This example bundles two applications - the bootloader application run by CM0+ core and the blinky application run by CM4 or CM7 core. You need to build and program the applications in the following order. Follow the [Step-by-step instructions](#step-by-step-instructions) to start building the application.
 
-1. **Build and program the bootloader app** - On the next reset, CM0P core runs the bootloader and prints a message "MCUBoot Bootloader found none of bootable images".
+1. **Build and program the bootloader app** - On the next reset, CM0+ core runs the bootloader and prints a message "MCUBoot Bootloader found none of bootable images".
 
 2. **Build and program the blinky application in BOOT mode (default)** - On the next reset, the bootloader will let CM4 or CM7 core run the blinky application from the primary slot. This application toggles the user LED at a 1-second interval.
 
@@ -198,11 +199,11 @@ This example bundles two applications - the bootloader application run by CM0P c
    > **Note:** For Linux and macOS platforms, please use `python3` instead of `python` in the below command.
 
    ```
-   python -m pip install --upgrade cysecuretools==5.0.0
+   python -m pip install --upgrade cysecuretools
    ```
 > **Note:** Follow **Step 5** and **Step 6**, to build and program the applications separately by using CLI. Follow **Step 7**, to build and program combined image for both the applications by using CLI or  Eclipse IDE
-   
-   
+
+
 5. Build and program the bootloader application.
 
    <details open><summary><b>Using CLI</b></summary>
@@ -213,7 +214,7 @@ This example bundles two applications - the bootloader application run by CM0P c
       make program_proj
       ```
    </details>
-   
+
    <br> After programming, the bootloader starts automatically. Confirm that the UART terminal displays a message as shown in **Figure 1**.
 
    **Figure 1. Booting with no bootable image**
@@ -230,7 +231,7 @@ This example bundles two applications - the bootloader application run by CM0P c
       make program_proj IMG_TYPE=BOOT
       ```
    </details>
-    
+
     After programming, the bootloader starts automatically and lets CM4 or CM7 core run the blinky application. Confirm that the user LED toggles at a 1-second interval and the UART terminal displays a message as shown in **Figure 2**.
 
    **Figure 2. Booting with the blinky application in the BOOT mode**
@@ -249,7 +250,7 @@ This example bundles two applications - the bootloader application run by CM0P c
 
    </details>
 
-   <details open><summary><b>Using CLI</b></summary> 
+   <details open><summary><b>Using CLI</b></summary>
 
       From the terminal, go to *\<application>* directory and execute the `make program` command to build and program the application using the default toolchain to the default target.
 
@@ -280,7 +281,7 @@ This example bundles two applications - the bootloader application run by CM0P c
       From the terminal, go to *\<application>/blinky_app* directory and execute the following command to build the application using the default toolchain to the default target:
 
       ```
-      make build_proj -j8 IMG_TYPE=UPGRADE
+      make build_proj IMG_TYPE=UPGRADE
       ```
     </details>
 
@@ -316,7 +317,7 @@ This example bundles two applications - the bootloader application run by CM0P c
 
        ![](images/booting-with-blinky-in-upgrade-mode-overwrite-based-upgrade.png)
 
-    2. For a swap-based upgrade, To make the UPGRADE image as the permanent primary image, enter 'Y' in the UART terminal. To revert back to the BOOT image, enter 'N' in the UART terminal. Confirm that the user LED toggles approximately at a 250-millisecond interval and the UART terminal displays the message as shown in **Figure 5** and **Figure 6** according to your response. 
+    2. For a swap-based upgrade, To make the UPGRADE image as the permanent primary image, enter 'Y' in the UART terminal. To revert back to the BOOT image, enter 'N' in the UART terminal. Confirm that the user LED toggles approximately at a 250-millisecond interval and the UART terminal displays the message as shown in **Figure 5** and **Figure 6** according to your response.
 
        **Figure 5. Booting the blinky application in the UPGRADE mode after successful SWAP-based upgrade with response YES**
 
@@ -340,21 +341,21 @@ This example bundles two applications - the bootloader application run by CM0P c
 
 > **NOTE:** You can build the combined image for bootloader and blinky applications using the `make build` CLI command in the *\<application>* directory but during the linking stage there might be an error stating multiple definitions of symbols for blinky applications for `BOOT` and `UPGRADE` image. Currently, the solution to the problem has been addressed in the following code section of the *\<application>/blinky_app/Makefile* which ignores the build artifacts of the other `IMG_TYPE`. Ex: If `BOOT` is selected as `IMG_TYPE` then *\<application>/blinky_app/build/UPGRADE* build directory artifacts will be ignored during the compilation and linking of the `BOOT` image.
 
-      ```
-      ifeq ($(IMG_TYPE), BOOT)
-      CY_IGNORE+=build/UPGRADE
-      else
-      ifeq ($(IMG_TYPE), UPGRADE)
-      CY_IGNORE+=build/BOOT
-      endif
-      endif
-      ```
+   ```
+   ifeq ($(IMG_TYPE), BOOT)
+   CY_IGNORE+=build/UPGRADE
+   else
+   ifeq ($(IMG_TYPE), UPGRADE)
+   CY_IGNORE+=build/BOOT
+   endif
+   endif
+   ```
 
 For programming the individual builds of the bootloader and blinky app, use the `make program_proj` CLI command as shown in the preceding steps.
 
 ## Debugging
 
-You can debug the example to step through the code. 
+You can debug the example to step through the code.
 
 <details><summary><b>In Eclipse IDE</b></summary>
 
@@ -378,7 +379,7 @@ In a real scenario, an application that can download the UPGRADE image over a wi
 
 The MCUboot repo in [GitHub](https://github.com/mcu-tools/mcuboot/tree/v1.9.1-cypress/boot/cypress) also includes two applications - MCUbootApp and BlinkyApp - for PSoC&trade; 6 and XMC7000 MCU families. The functionality of this code example is the same as those applications. In this example, the bootloader application reuses a lot of source files (see *\<application>/common_libs* for the exact list of files) from the MCUbootApp.
 
-This code example uses ModusToolbox&trade; resources such as BSPs, PSoC&trade; 62 and XMC7200 MCU devices to provide a rich development experience that aligns well with other code examples based on ModusToolbox&trade;. The execution flow of the bootloader application is shown in **Figure 9**.
+This code example uses ModusToolbox&trade; resources such as BSPs, PSoC&trade; 62 and XMC7000 MCU devices to provide a rich development experience that aligns well with other code examples based on ModusToolbox&trade;. The execution flow of the bootloader application is shown in **Figure 9**.
 
 **Figure 9. Bootloader application flow**
 
@@ -417,7 +418,7 @@ See [MCUboot design](https://github.com/mcu-tools/mcuboot/blob/v1.9.1-cypress/do
 
 ### Memory map/partition
 
-**Figure 10** shows a typical flash map or partition used with MCUboot. The partitions need not be contiguous in the memory because it is possible to configure the offset and size of each partition. However, the offset and the size must be aligned to the boundary of a flash row or sector. For PSoC&trade; 6 and XMC7000 MCUs, the size of a flash row is 512 bytes. Also, the partition can be in either the internal flash or external flash (External flash is not supported for XMC7200 at the moment).
+**Figure 10** shows a typical flash map or partition used with MCUboot. The partitions need not be contiguous in the memory because it is possible to configure the offset and size of each partition. However, the offset and the size must be aligned to the boundary of a flash row or sector. For PSoC&trade; 6 and XMC7000 MCUs, the size of a flash row is 512 bytes. Also, the partition can be in either the internal flash or external flash (External flash is not supported for XMC7000 at the moment).
 
 The memory partition is defined through a flash map (a JSON file, see *\<application>/flashmap/* directory for examples). It is important that the bootloader application and the bootable application (i.e., the blinky application in this example) agree on the flash map. This example uses a shared file (*\<application>/user_config.mk*) between the two applications and *memorymap.mk* (autogenerated from the flashmap JSON file) so that they can use the same set of flash map parameters. See Configuring the default flash map for details.
 
@@ -467,11 +468,11 @@ The structures generated in the *memorymap.c* and *memorymap.h* files are used b
 
 > **Note:** While modifying the flash map, make sure the primary slot, secondary slot, and bootloader application flash sizes are appropriate. In this code example, it will automatically match the application linker scripts flash memory allocation with the *memorymap.c* and *user_config.mk* files.
 
-### Customizing the RAM area of CM0P and CM4 or CM7 applications
+### Customizing the RAM area of CM0+ and CM4 or CM7 applications
 
-Modify the `BOOTLOADER_APP_RAM_SIZE` to change the CM0P core ram size in the *\<application>/user_config.mk* file. The remaining RAM size will be set for CM4 or CM7 core.
+Modify the `BOOTLOADER_APP_RAM_SIZE` to change the CM0+ core ram size in the *\<application>/user_config.mk* file. The remaining RAM size will be set for CM4 or CM7 core.
 
-> **Note:** If you are customizing your own linker script for CM0P and CM4 or CM7 core, make sure the RAM areas of the CM0P-based bootloader and CM4- or CM7-based user application do not overlap. Memory (stack) corruption of the CM0P application can cause failure if SystemCall-served operations are invoked from CM4 or CM7.
+> **Note:** If you are customizing your own linker script for CM0+ and CM4 or CM7 core, make sure the RAM areas of the CM0P-based bootloader and CM4- or CM7-based user application do not overlap. Memory (stack) corruption of the CM0+ application can cause failure if SystemCall-served operations are invoked from CM4 or CM7.
 
 ### Configuring make variables
 
@@ -487,13 +488,13 @@ These variables are common to both the bootloader and blinky applications, its c
  -------- | ------------- |------------
  `FAMILY`             | Autoselected | Family name.  <br>Valid values: `PSOC6`, `XMC7000`.  <br>**Note:** Currently, in the Makefile, a conditional if-else block is used to automatically select a value based on the selected `TARGET`. You can remove it and directly assign a value according to **Table 4**.
  `FLASH_MAP`             | psoc62_overwrite_single.json or xmc7000_overwrite_single.json | Flashmap JSON file name.  <br>Valid flashmap for XMC7000: `xmc7000_overwrite_single.json`and `xmc7000_swap_single.json`.  <br>Valid flashmap for PSOC6: `psoc62_overwrite_single_smif.json`, `psoc62_overwrite_single.json`,`psoc62_swap_single_smif.json`,`psoc62_swap_single.json`, `psoc62_xip_overwrite.json` and `psoc62_xip_swap.json`.<br> **Note:** XIP mode is not supported for the CYW9P62S1-43012EVB-01 kit.
- `PLATFORM`             | Autoselected | Platform name. <br>Valid values: `PSOC_062_1M`, `PSOC_062_2M`, `PSOC_062_512K` and `XMC7200`.  <br>**Note:** Currently, in the Makefile, a conditional filter block is used to automatically select a value based on the `TARGET` selected. You can remove it and directly assign a value according to **Table 4**.
+ `PLATFORM`             | Autoselected | Platform name. <br>Valid values: `PSOC_062_1M`, `PSOC_062_2M`, `PSOC_062_512K`, `XMC7100`, and `XMC7200`.  <br>**Note:** Currently, in the Makefile, a conditional filter block is used to automatically select a value based on the `TARGET` selected. You can remove it and directly assign a value according to **Table 4**.
  `USER_APP_CORE`             | Autoselected | User application core (blinky). <br>Valid values: CM4, CM7. Currently, in the Makefile, a conditional if-else block is used to automatically select a value based on the `FAMILY` selected.
  `SIGN_KEY_FILE`             | cypress-test-ec-p256 | Name of the private and public key files (the same name is used for both keys). |
  `KEY_FILE_PATH` | *\<application>/keys* | Path to the private key file. Used with the *imgtool* for signing the image.
- `USER_APP_CORE_ID`| 0 | Bootloader designed like user application can either run on CM7_0 or CM7_1 cores ( for XMC7200 kit). By default, blinky application run on the CM7_0 core. Can change the core by setting the value to `1`.
- `BOOTLOADER_SIZE`           | Autogenerated       | Flash size of the bootloader application run by CM0P. <br>In the linker script for the bootloader application (CM0P), the `LENGTH` of the `flash` region is set to this value.<br>In the linker script for the blinky application (CM4 or CM7), the `ORIGIN` of the `flash` region is offset to this value.
- `BOOTLOADER_APP_RAM_SIZE`   | 0x20000              | RAM size of the bootloader application run by CM0P. <br>In the linker script for the bootloader application (CM0P), the `LENGTH` of the `ram` region is set to this value.<br/>In the linker script for the blinky application (CM4 or CM7), the `ORIGIN` of the `ram` region is offset to this value, and the `LENGTH` of the `ram` region is calculated based on this value.
+ `USER_APP_CORE_ID`| 0 | Bootloader designed like user application can either run on CM7_0 or CM7_1 cores (for XMC7000 kits). By default, blinky application run on the CM7_0 core. Can change the core by setting the value to `1`.
+ `BOOTLOADER_SIZE`           | Autogenerated       | Flash size of the bootloader application run by CM0+. <br>In the linker script for the bootloader application (CM0+), the `LENGTH` of the `flash` region is set to this value.<br>In the linker script for the blinky application (CM4 or CM7), the `ORIGIN` of the `flash` region is offset to this value.
+ `BOOTLOADER_APP_RAM_SIZE`   | 0x20000              | RAM size of the bootloader application run by CM0+. <br>In the linker script for the bootloader application (CM0+), the `LENGTH` of the `ram` region is set to this value.<br/>In the linker script for the blinky application (CM4 or CM7), the `ORIGIN` of the `ram` region is offset to this value, and the `LENGTH` of the `ram` region is calculated based on this value.
  `SLOT_SIZE`                 | Autogenerated       | Size of the primary slot and secondary slot. i.e., the flash size of the blinky application run by CM4 or CM7.
  `MAX_IMG_SECTORS`           | Autogenerated       | Maximum number of flash sectors (or rows) per image slot for which swap status is tracked in the image trailer.
  `MCUBOOT_IMAGE_NUMBER`      | Autogenerated       | The number of images supported in the case of multi-image bootloading.
@@ -504,11 +505,11 @@ These variables are common to both the bootloader and blinky applications, its c
 
 > **Note:** The value of `MCUBOOT_HEADER_SIZE` must be a multiple of 1024 because the CM4 or CM7 image begins immediately after the MCUboot header and it begins with the interrupt vector table. For PSoC&trade; 6 MCU, the starting address of the interrupt vector table must be 1024-bytes aligned.
 
-`Number of bytes to be aligned to = Number of interrupt vectors x 4 bytes`
+_Number of bytes to be aligned to = Number of interrupt vectors x 4 bytes_
 
 i.e., 1024 = 256 vectors x 4 bytes (32-bit address) per vector.
 
-PSoC&trade; 6 MCU supports up to 240 external interrupts in addition to the 16 system exceptions provided by CM4. See the description of the CPUSS_CM4_VECTOR_TABLE_BASE register in [PSoC&trade; 6 registers technical reference manual](https://www.infineon.com/dgdl/Infineon-PSoC_6_MCU_PSoC_62_Register_Technical_Reference_Manual-AdditionalTechnicalInformation-v07_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0f9480c901dd) and the description of the Vector Table Offset register (VTOR) in Cortex&reg;-M4 (ARMv7-M) architecture technical reference manual for details.
+PSoC&trade; 6 MCU supports up to 240 external interrupts in addition to the 16 system exceptions provided by CM4. See the description of the CPUSS_CM4_VECTOR_TABLE_BASE register in [PSoC&trade; 6 registers technical reference manual](https://documentation.infineon.com/html/psoc6/zrs1651212645947.html) and the description of the Vector Table Offset register (VTOR) in Cortex&reg;-M4 (ARMv7-M) architecture technical reference manual for details.
 
 
 #### **Bootloader application make variables**
@@ -550,6 +551,7 @@ CY8CPROTO-062S2-43439 <br>CY8CPROTO-062-4343W <br>CY8CKIT-062S2-43012 <br>CY8CEV
 CY8CKIT-062-WIFI-BT <br>CY8CKIT-062-BLE <br>CYW9P62S1-43438EVB-01 <br>CYW9P62S1-43012EVB-01 <br> | PSOC6 | PSOC_062_1M
 CY8CPROTO-062S3-4343W | PSOC6 | PSOC_062_512K
 KIT_XMC72_EVK <br>KIT_XMC72_EVK_MUR_43439M2 | XMC7000 | XMC7200
+KIT_XMC71_EVK_LITE_V1 | XMC7000 | XMC7100
 
 <br>
 
@@ -567,7 +569,7 @@ arm-none-eabi-objcopy --change-addresses=HEADER_OFFSET -O ihex <input.elf> <outp
 
 > **Note:** If you are placing more than one image in the external flash, ensure that the starting address of the images is aligned to the erase sector size of the NOR flash. For S25FL512S, the erase sector size is 256 KB (0x40000).
 
-> **Note:** In this code example, external flash is not supported for XMC7200 device at the moment.
+> **Note:** In this code example, external flash is not supported for XMC7000 device at the moment.
 
 ### External flash programming
 
@@ -581,9 +583,9 @@ The *\<mtb_shared>/mcuboot/\<tag>/boot/cypress/MCUBootApp/cy_serial_flash_prog.c
 
 > **Note:** This example simply demonstrates the image-signing feature of MCUboot. It does not implement root of trust (RoT)-based secured services such as secured boot and secured storage (to securely store and retrieve the keys). You must ensure that adequate security measures are implemented in your end product. See the [PSoC&trade; 64 line of secured MCUs](https://www.infineon.com/cms/en/product/microcontroller/32-bit-psoc-arm-cortex-microcontroller/psoc-6-32-bit-arm-cortex-m4-mcu/psoc-64) that offer those advanced security built-in features, and read this [whitepaper](https://www.infineon.com/dgdlac/Infineon-Security_Comparison_Between_PSoC_64_Secure_MCU_and_PSoC_62_63_MCU-Whitepaper-v01_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0fb27691270a) that compares the security features between PSoC&trade; 64 'secure' MCU and PSoC&trade; 62/63 MCUs.
 
-MCUboot checks the image integrity with SHA256, and image authenticity with digital signature verification. Multiple signature algorithms are supported; this example enables ECDSA SECP256R1 (EC256) by default. MCUboot uses the `Mbed TLS` library for cryptography.
+MCUboot checks the image integrity with SHA256, and image authenticity with digital signature verification. Multiple signature algorithms are supported; this example enables ECDSA SECP256R1 (EC256) by default. MCUboot uses the "Mbed TLS" library for cryptography.
 
-PSoC&trade; 6 MCU supports hardware-accelerated cryptography based on the `Mbed TLS` library via a shim layer. The  [cy-mbedtls-acceleration](https://github.com/Infineon/cy-mbedtls-acceleration) library implements this layer. Hardware-accelerated cryptography shortens the boot time by more than four times compared to the software implementation (observation results).
+PSoC&trade; 6 MCU supports hardware-accelerated cryptography based on the "Mbed TLS" library via a shim layer. The  [cy-mbedtls-acceleration](https://github.com/Infineon/cy-mbedtls-acceleration) library implements this layer. Hardware-accelerated cryptography shortens the boot time by more than four times compared to the software implementation (observation results).
 
 > **Note:** In this code example, encryption image and hardware crypto acceleration are not supported at the moment.
 
@@ -613,7 +615,7 @@ You can use the *imgtool* Python module to generate the keys.
 1. Generate the private key:
 
    ```
-   python $(IMGTOOL_PATH)/imgtool.py keygen -k <application>/keys/cypress-test-ec-p256.pem -t ecdsa-p256 
+   python $(IMGTOOL_PATH)/imgtool.py keygen -k <application>/keys/cypress-test-ec-p256.pem -t ecdsa-p256
    ```
 
 2. Generate the public key:
@@ -658,9 +660,9 @@ The post-build steps are specified through the `POSTBUILD` variable in *\<applic
 
 1. Both the bootloader application and the blinky application implement redirecting printf to the serial port (UART). Both applications use the same SCB (UART) block to communicate with the USB-to-UART bridge provided by KitProg3. The bootloader application runs first, initializes the UART block, prints the messages, and then boots the blinky application which then again initializes the same UART block and prints messages. There is no conflict currently because the applications do not print simultaneously.
 
-2. The XMC7000 is a multi-core device, this code example is designed to run the bootloader on the CM0P core and blinky application on the CM7_0 or CM7_1 core by simply changing the variable `USER_APP_CORE_ID`. The bootloader on CM0P will always check for a valid application binary. On every power cycle, transfer control to the CM7_0 or CM7_1 core to execute the blinky application.
+2. The XMC7000 is a multi-core device, this code example is designed to run the bootloader on the CM0+ core and blinky application on the CM7_0 or CM7_1 core by simply changing the variable `USER_APP_CORE_ID`. The bootloader on CM0+ will always check for a valid application binary. On every power cycle, transfer control to the CM7_0 or CM7_1 core to execute the blinky application.
 
-3. PSoC&trade; 6 is a dual-core device, this code example is designed to run the bootloader on the CM0P core and blinky application on the CM4_0. The bootloader on CM0P will always check for a valid application binary. On every power cycle, transfer control to the CM4_0 core to execute the blinky application. So variable `USER_APP_CORE_ID` should be always '0'.
+3. PSoC&trade; 6 is a dual-core device, this code example is designed to run the bootloader on the CM0+ core and blinky application on the CM4_0. The bootloader on CM0+ will always check for a valid application binary. On every power cycle, transfer control to the CM4_0 core to execute the blinky application. So variable `USER_APP_CORE_ID` should be always '0'.
 
 ## Resources and settings
 
@@ -683,13 +685,13 @@ GPIO (HAL)    | CYBSP_USER_LED         | User LED
 
 ### Folder structure
 
-This application has a different folder structure because it contains the firmware for CM0P and CM4 or CM7 applications as follows:
+This application has a different folder structure because it contains the firmware for CM0+ and CM4 or CM7 applications as follows:
 ```
 |-- <application>                   # Application directory
-    |-- bootloader_app/             # CM0P application folder
+    |-- bootloader_app/             # CM0+ application folder
         |-- deps/                   # Contains application dependence middleware links
         |-- source/                 # Contains source file
-        |-- Makefile                # Top-level CM0P application Makefile
+        |-- Makefile                # Top-level CM0+ application Makefile
     |-- blinky_app/                 # CM4 or CM7 application folder
         |-- deps/                   # Contains application dependence middleware links
         |-- source/                 # Contains source files
@@ -710,7 +712,7 @@ This application has a different folder structure because it contains the firmwa
 
 Resources  | Links
 -----------|----------------------------------
-Application notes  | [AN228571](https://www.infineon.com/AN228571) – Getting started with PSoC&trade; 6 MCU on ModusToolbox&trade; <br>  [AN215656](https://www.infineon.com/AN215656) – PSoC&trade; 6 MCU: Dual-CPU system design <br>[AN234334](https://www.infineon.com/dgdl/Infineon-AN234334_Getting_started_with_XMC7000_MCU_on_ModusToolbox_software-ApplicationNotes-v01_00-EN.pdf?fileId=8ac78c8c8412f8d301842d32c5765bfd) – Getting started with XMC7000 MCU on ModusToolbox&trade; software <br> [AN234023](https://www.infineon.com/dgdl/Infineon-AN234023-Smart_IO_usage_setup_in_XMC7000_family-ApplicationNotes-v01_00-EN.pdf?fileId=8ac78c8c8412f8d301845123d1704f20) – Smart I/O usage setup in XMC7000 family 
+Application notes  | [AN228571](https://www.infineon.com/AN228571) – Getting started with PSoC&trade; 6 MCU on ModusToolbox&trade; <br>  [AN215656](https://www.infineon.com/AN215656) – PSoC&trade; 6 MCU: Dual-CPU system design <br>[AN234334](https://www.infineon.com/dgdl/Infineon-AN234334_Getting_started_with_XMC7000_MCU_on_ModusToolbox_software-ApplicationNotes-v01_00-EN.pdf?fileId=8ac78c8c8412f8d301842d32c5765bfd) – Getting started with XMC7000 MCU on ModusToolbox&trade; software <br> [AN234023](https://www.infineon.com/dgdl/Infineon-AN234023-Smart_IO_usage_setup_in_XMC7000_family-ApplicationNotes-v01_00-EN.pdf?fileId=8ac78c8c8412f8d301845123d1704f20) – Smart I/O usage setup in XMC7000 family
 Code examples  | [Using ModusToolbox&trade;](https://github.com/Infineon/Code-Examples-for-ModusToolbox-Software) on GitHub
 Device documentation | [PSoC&trade; 6 MCU datasheets](https://documentation.infineon.com/html/psoc6/bnm1651211483724.html) <br> [PSoC&trade; 6 technical reference manuals](https://documentation.infineon.com/html/psoc6/zrs1651212645947.html)<br>[XMC7000 MCU datasheets](https://www.infineon.com/cms/en/product/microcontroller/32-bit-industrial-microcontroller-based-on-arm-cortex-m/) <br> [XMC7000 technical reference manuals](https://www.infineon.com/cms/en/product/microcontroller/32-bit-industrial-microcontroller-based-on-arm-cortex-m/)
 Development kits | Select your kits from the [Evaluation board finder](https://www.infineon.com/cms/en/design-support/finder-selection-tools/product-finder/evaluation-board)<br>[XMC&trade; eval boards](https://www.infineon.com/cms/en/product/microcontroller/32-bit-industrial-microcontroller-based-on-arm-cortex-m/#boards)
@@ -744,6 +746,7 @@ Document title: *CE230650* – *MCUboot-based basic bootloader*
  6.2.0   | Updated to support ModusToolbox&trade; v3.2
  7.0.0   | Updated to support MCUboot middleware v1.9.1<br> Added support for KIT_XMC72_EVK, KIT_XMC72_EVK_MUR_43439M2, CY8CEVAL-062S2-LAI-43439M2, CY8CEVAL-062S2-CYW43022CUB and CY8CPROTO-062S2-43439 kits.
  7.1.0   | Added support for CY8CEVAL-062S2-CYW955513SDM2WLIPA
+ 7.2.0   | Added support for KIT_XMC71_EVK_LITE_V1
 <br>
 
 

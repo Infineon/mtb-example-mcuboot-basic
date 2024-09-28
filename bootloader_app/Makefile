@@ -38,6 +38,9 @@ APPNAME=bootloader_app
 # If set to "true" or "1", display full command-lines when building.
 VERBOSE=
 
+# Disable the data cache for XMC7000 devices
+DEFINES+=CY_DISABLE_XMC7000_DATA_CACHE
+
 ################################################################################
 # MCUboot Specific Configuration
 ################################################################################
@@ -249,19 +252,17 @@ LDLIBS=
 # fetching submodules.
 # The PREBUILD command fetches the submodules only if the content of the
 # "mcuboot/ext/mbedtls" directory is empty.
-PREBUILD_VAR=+\
-@if [ -n "$$(ls -A $(MBEDTLS_PATH) 2>/dev/null)" ]; then\
-    echo "Git submodules for MCUboot exist. Skipping this step...";\
+prebuild:
+	@if [ -n "$$(ls -A $(MBEDTLS_PATH) 2>/dev/null)" ]; then\
+        echo "Git submodules for MCUboot exist. Skipping this step...";\
     else\
-    echo "Initializing Git Submodules for MCUboot";\
-    cd libs/mcuboot;git submodule update --init --recursive;\
-fi;\
-rm -f ./source/memorymap.c;\
-rm -f ./source/memorymap.h;\
-rm -f ./memorymap.mk;\
-$(MAKE) generate_flashmap_bootloader;
-
-PREBUILD=$(PREBUILD_VAR)
+        echo "Initializing Git Submodules for MCUboot";\
+        cd libs/mcuboot;git submodule update --init --recursive;\
+    fi
+	@rm -f ./source/memorymap.c
+	@rm -f ./source/memorymap.h
+	@rm -f ./memorymap.mk
+	@$(MAKE) generate_flashmap_bootloader
 
 # Custom post-build commands to run.
 POSTBUILD=

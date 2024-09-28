@@ -41,6 +41,9 @@ APPNAME=blinky_app
 # If set to "true" or "1", display full command-lines when building.
 VERBOSE=
 
+# Disable the data cache for XMC7000 devices
+DEFINES+=CY_DISABLE_XMC7000_DATA_CACHE
+
 ################################################################################
 # MCUboot Specific Configuration
 ###############################################################################
@@ -81,7 +84,7 @@ endif
 
 # 1. Define the image type.
 # 2. Ignore the build directory(if any) of other build mode to avoid linker error.
-# 3. Disabling the encrpyt image support while signing the boot image
+# 3. Disabling the encrypt image support while signing the boot image
 # 4. Add flag, if not using swap for upgrade
 ifeq ($(IMG_TYPE), BOOT)
 DEFINES+=BOOT_IMAGE
@@ -95,7 +98,7 @@ endif
 
 # Set the version of the app using the following three variables.
 # This version information is passed to the Python module "imgtool" or "cysecuretools" while
-# signing the image in the post build step. Default values are set as follows.
+# signing the image in the post-build step. Default values are set as follows.
 ifeq ($(IMG_TYPE), BOOT)
 APP_VERSION_MAJOR?=1
 APP_VERSION_MINOR?=0
@@ -265,7 +268,7 @@ XMC7000_PLATFORM_SIGN_ARGS=$(PLATFORM) sign-image --header-size 1024 --align 8 -
                --key-path $(SIGN_KEY_FILE_PATH)/$(SIGN_KEY_FILE).pem
 
 # Starting address of the CM4 app or the offset at which the header of an image
-# will begin. Image = Header + App + TLV + Trailer. See MCUboot documenation for
+# will begin. Image = Header + App + TLV + Trailer. See MCUboot documentation for
 # details.
 # New relocated address = ORIGIN + HEADER_OFFSET
 # Padding the image for UPGRADE image.
@@ -280,13 +283,11 @@ HEX_START_ADDR?=$(SECONDARY_IMG_START)
 endif
 
 # Custom pre-build commands to run.
-PREBUILD_VAR=+\
-rm -f ./source/memorymap.c;\
-rm -f ./source/memorymap.h;\
-rm -f ./memorymap.mk;\
-$(MAKE) generate_flashmap_blinky_app;
-
-PREBUILD=$(PREBUILD_VAR)
+prebuild:
+	@rm -f ./source/memorymap.c
+	@rm -f ./source/memorymap.h
+	@rm -f ./memorymap.mk
+	@$(MAKE) generate_flashmap_blinky_app
 
 # Custom post-build commands to run.
 # 1. Take a backup of the original hex file (_raw.hex)
