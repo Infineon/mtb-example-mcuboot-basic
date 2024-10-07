@@ -12,14 +12,14 @@
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-mcuboot-basic)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzA2NTAiLCJTcGVjIE51bWJlciI6IjAwMi0zMDY1MCIsIkRvYyBUaXRsZSI6Ik1DVWJvb3QtYmFzZWQgYmFzaWMgYm9vdGxvYWRlciIsInJpZCI6InZhaXIiLCJEb2MgdmVyc2lvbiI6IjcuMi4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJXSUZJIn0=)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzA2NTAiLCJTcGVjIE51bWJlciI6IjAwMi0zMDY1MCIsIkRvYyBUaXRsZSI6Ik1DVWJvb3QtYmFzZWQgYmFzaWMgYm9vdGxvYWRlciIsInJpZCI6InZhaXIiLCJEb2MgdmVyc2lvbiI6IjcuMy4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJXSUZJIn0=)
 
 ## Requirements
 
 - [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.2 or later (tested with v3.2)
 - Board support package (BSP) minimum required version: 4.0.0
 - Programming language: C
-- Other tools: Python v3.12.4
+- Other tools: Python v3.8.10 or later
 - Associated parts: All [XMC7000 MCU](https://www.infineon.com/cms/en/product/microcontroller/32-bit-industrial-microcontroller-based-on-arm-cortex-m/) and [PSoC&trade; 6 MCU](https://www.infineon.com/cms/en/product/microcontroller/32-bit-psoc-arm-cortex-microcontroller/psoc-6-32-bit-arm-cortex-m4-mcu) parts, [AIROC&trade; CYW43012 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43012), [AIROC&trade; CYW4343W Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw4343w), [AIROC&trade; CYW4373 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-5-802.11ac/cyw4373), [AIROC&trade; CYW43439 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43439)
 
 ## Supported toolchains (make variable 'TOOLCHAIN')
@@ -39,6 +39,7 @@
 - [PSoC&trade; 62S2 Evaluation Kit](https://www.infineon.com/CY8CEVAL-062S2) (`CY8CEVAL-062S2`, `CY8CEVAL-062S2-LAI-4373M2`, `CY8CEVAL-062S2-LAI-43439M2`, `CY8CEVAL-062S2-MUR-43439M2`, `CY8CEVAL-062S2-MUR-4373EM2`, `CY8CEVAL-062S2-MUR-4373M2`, `CY8CEVAL-062S2-CYW43022CUB`,`CY8CEVAL-062S2-CYW955513SDM2WLIPA`)
 - [XMC7200 Evaluation Kit](https://www.infineon.com/KIT_XMC72_EVK) (`KIT_XMC72_EVK`, `KIT_XMC72_EVK_MUR_43439M2`)
 - [XMC7100 Evaluation Kit](https://www.infineon.com/KIT_XMC71_EVK_LITE_V1) (`KIT_XMC71_EVK_LITE_V1`)
+- [PSoC&trade; 6 AI Evaluation Kit](https://www.infineon.com/CY8CKIT-062S2-AI) (`CY8CKIT-062S2-AI`)
 
 ## Hardware setup
 
@@ -50,7 +51,7 @@ This example uses the board's default configuration. See the kit user guide to e
 
 See the [ModusToolbox&trade; tools package installation guide](https://www.infineon.com/ModusToolboxInstallguide) for information about installing and configuring the tools package.
 1. Install a terminal emulator if you don't have one. Instructions in this document use [Tera Term](https://teratermproject.github.io/index-en.html).
-2. Install the Python interpreter and add it to the top of the system path in environmental variables. This code example is tested with [Python v3.12.4](https://www.python.org/downloads/release/python-3124/).
+2. Install the Python interpreter and add it to the top of the system path in environmental variables. This code example is tested with [Python v3.8.10](https://www.python.org/downloads/release/python-3810/).
 
 > **Note:** This code example currently does not work with the custom BSP name for the XMC7000 family. If you want to change the BSP name to a non-default value, ensure to update the custom BSP name in *user_config.mk* file under  the relevant section. The build fails, if you do not update the custom BSP name.
 
@@ -747,6 +748,7 @@ Document title: *CE230650* – *MCUboot-based basic bootloader*
  7.0.0   | Updated to support MCUboot middleware v1.9.1<br> Added support for KIT_XMC72_EVK, KIT_XMC72_EVK_MUR_43439M2, CY8CEVAL-062S2-LAI-43439M2, CY8CEVAL-062S2-CYW43022CUB and CY8CPROTO-062S2-43439 kits.
  7.1.0   | Added support for CY8CEVAL-062S2-CYW955513SDM2WLIPA
  7.2.0   | Added support for KIT_XMC71_EVK_LITE_V1
+ 7.3.0   | Added support for CY8CKIT-062S2-AI
 <br>
 
 
