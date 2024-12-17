@@ -41,8 +41,8 @@ APPNAME=blinky_app
 # If set to "true" or "1", display full command-lines when building.
 VERBOSE=
 
-# Disable the data cache for XMC7000 devices
-DEFINES+=CY_DISABLE_XMC7000_DATA_CACHE
+# Add additional defines to the build process (without a leading -D).
+DEFINES=
 
 ################################################################################
 # MCUboot Specific Configuration

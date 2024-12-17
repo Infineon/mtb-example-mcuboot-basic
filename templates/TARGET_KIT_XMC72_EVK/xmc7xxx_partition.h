@@ -11,6 +11,7 @@
 #define SRAM_BASE_ADDRESS               CY_SRAM_BASE  /* SRAM START */
 #define TOTAL_RAM                       CY_SRAM_SIZE
 #define CM0PLUS_SRAM_RESERVE            0x00020000    /* 128K -> cm0plus */
+#define CM7_SRAM_NON_CACHE_RESERVE      0x00020000  /* 128K  :non-cacheable sram size */
 
 /* FLASH */
 #define CODE_FLASH_BASE_ADDRESS         CY_FLASH_LG_SBM_BASE                           /* FLASH START */
@@ -20,7 +21,7 @@
 /* In our code example, user app will run on either CM7_0 core or CM7_1 core.
  * So, we are giving the same FLASH/RAM base address and size for both the CM7_0/CM7_1 cores */
 /* CM7_1 RAM and FLASH */
-#define CM7_X_SRAM_RESERVE              (0x00080000 - CM0PLUS_SRAM_RESERVE)   /* 382KB -> cm7_x */
+#define CM7_X_SRAM_RESERVE              (0x000A0000 - CM0PLUS_SRAM_RESERVE - CM7_SRAM_NON_CACHE_RESERVE)   /* 384KB -> cm7_x */
 #define CM7_X_CODE_FLASH_RESERVE        0x00020000                            /* 128K CM7_x FLASH SIZE */
 
 /* SRAM reservations */
@@ -29,6 +30,9 @@
 #define BASE_SRAM_CM7_0                 (SRAM_BASE_ADDRESS + CM0PLUS_SRAM_RESERVE)
 #define SIZE_SRAM_CM7_0                 CM7_X_SRAM_RESERVE
 #define BASE_SRAM_CM7_1                 (SRAM_BASE_ADDRESS + CM0PLUS_SRAM_RESERVE)
+
+#define BASE_SRAM_NON_CACHE             BASE_SRAM_CM7_1 + CM7_X_SRAM_RESERVE
+#define SIZE_SRAM_NON_CACHE             CM7_SRAM_NON_CACHE_RESERVE
 
 /* Code flash reservations */
 #define BASE_CODE_FLASH_CM0P            CODE_FLASH_BASE_ADDRESS
