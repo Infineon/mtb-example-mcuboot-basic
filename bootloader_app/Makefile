@@ -45,28 +45,40 @@ DEFINES=
 # MCUboot Specific Configuration
 ################################################################################
 
-.PHONY: generate_flashmap_bootloader
-
 # Python command to generate flashmap header file from flashmap JSON file
+
 ifneq ($(FLASH_MAP), )
+.PHONY: FORCE
 ifeq ($(FAMILY), PSOC6)
-generate_flashmap_bootloader:
+memorymap.mk: FORCE
 	@echo -e "\n============================================================="
 	@echo -e "= Generating memorymap.h, memorymap.c and memorymap.mk ="
 	@echo -e "============================================================="
-	$(CY_PYTHON_PATH) ../scripts/memorymap_psoc6.py -p $(PLATFORM) -m -i ../flashmap/$(FLASH_MAP) -o ./source/memorymap.c -a ./source/memorymap.h > ./memorymap.mk
+	@rm -f ./source/memorymap.*
+	$(if $(SEARCH_core-make),$(CY_PYTHON_PATH),true) ../scripts/memorymap_psoc6.py -p $(PLATFORM) -m -i ../flashmap/$(FLASH_MAP) -o ./source/memorymap.c -a ./source/memorymap.h > ./memorymap.mk.tmp
+	@if ! cmp -s "memorymap.mk.tmp" "memorymap.mk"; then \
+		mv -f "memorymap.mk.tmp" "memorymap.mk"; \
+	else \
+		rm -f "memorymap.mk.tmp"; \
+	fi
 	@echo -e "=============================================================\n"
 
 else ifeq ($(FAMILY), XMC7000)
-generate_flashmap_bootloader:
+memorymap.mk: FORCE
 	@echo -e "\n============================================================="
 	@echo -e "= Generating memorymap.h, memorymap.c and memorymap.mk ="
 	@echo -e "============================================================="
-	$(CY_PYTHON_PATH) ../scripts/memorymap_xmc7000.py run -p ../flashmap/$(PLATFORM_CONFIG) -i ../flashmap/$(FLASH_MAP) -o ./source -n memorymap > ./memorymap.mk
+	@rm -f ./source/memorymap.*
+	$(if $(SEARCH_core-make),$(CY_PYTHON_PATH),true) ../scripts/memorymap_xmc7000.py run -p ../flashmap/$(PLATFORM_CONFIG) -i ../flashmap/$(FLASH_MAP) -o ./source -n memorymap > ./memorymap.mk.tmp
+	@if ! cmp -s "memorymap.mk.tmp" "memorymap.mk"; then \
+		mv -f "memorymap.mk.tmp" "memorymap.mk"; \
+	else \
+		rm -f "memorymap.mk.tmp"; \
+	fi
 	@echo -e "=============================================================\n"
 
 endif
--include ./memorymap.mk
+-include memorymap.mk
 DEFINES+=CY_FLASH_MAP_JSON
 endif
 
@@ -248,21 +260,7 @@ endif
 LDLIBS=
 
 # Custom pre-build commands to run.
-# MCUboot uses submodules and "make getlibs" currently does not support
-# fetching submodules.
-# The PREBUILD command fetches the submodules only if the content of the
-# "mcuboot/ext/mbedtls" directory is empty.
-prebuild:
-	@if [ -n "$$(ls -A $(MBEDTLS_PATH) 2>/dev/null)" ]; then\
-        echo "Git submodules for MCUboot exist. Skipping this step...";\
-    else\
-        echo "Initializing Git Submodules for MCUboot";\
-        cd libs/mcuboot;git submodule update --init --recursive;\
-    fi
-	@rm -f ./source/memorymap.c
-	@rm -f ./source/memorymap.h
-	@rm -f ./memorymap.mk
-	@$(MAKE) generate_flashmap_bootloader
+PREBUILD=
 
 # Custom post-build commands to run.
 POSTBUILD=

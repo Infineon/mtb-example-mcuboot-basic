@@ -47,29 +47,39 @@ DEFINES=
 ################################################################################
 # MCUboot Specific Configuration
 ###############################################################################
-
-.PHONY: generate_flashmap_blinky_app
-
 # Python command to generate flashmap header file from flashmap JSON file
 ifneq ($(FLASH_MAP), )
+.PHONY: FORCE
 ifeq ($(FAMILY), PSOC6)
-generate_flashmap_blinky_app:
+memorymap.mk: FORCE
 	@echo -e "\n============================================================="
 	@echo -e "= Generating memorymap.h, memorymap.c and memorymap.mk ="
 	@echo -e "============================================================="
-	$(CY_PYTHON_PATH) ../scripts/memorymap_psoc6.py -p $(PLATFORM) -m -i ../flashmap/$(FLASH_MAP) -o ./source/memorymap.c -a ./source/memorymap.h -d $(IMG_ID) > ./memorymap.mk
+	@rm -f ./source/memorymap.*
+	$(if $(SEARCH_core-make),$(CY_PYTHON_PATH),true) ../scripts/memorymap_psoc6.py -p $(PLATFORM) -m -i ../flashmap/$(FLASH_MAP) -o ./source/memorymap.c -a ./source/memorymap.h -d $(IMG_ID) > ./memorymap.mk.tmp
+	@if ! cmp -s "memorymap.mk.tmp" "memorymap.mk"; then \
+		mv -f "memorymap.mk.tmp" "memorymap.mk"; \
+	else \
+		rm -f "memorymap.mk.tmp"; \
+	fi
 	@echo -e "=============================================================\n"
 
 else ifeq ($(FAMILY), XMC7000)
-generate_flashmap_blinky_app:
+memorymap.mk: FORCE
 	@echo -e "\n============================================================="
 	@echo -e "= Generating memorymap.h, memorymap.c and memorymap.mk ="
 	@echo -e "============================================================="
-	$(CY_PYTHON_PATH) ../scripts/memorymap_xmc7000.py run -p ../flashmap/$(PLATFORM_CONFIG) -i ../flashmap/$(FLASH_MAP) -o ./source -n memorymap -d $(IMG_ID) > ./memorymap.mk
+	@rm -f ./source/memorymap.*
+	$(if $(SEARCH_core-make),$(CY_PYTHON_PATH),true) ../scripts/memorymap_xmc7000.py run -p ../flashmap/$(PLATFORM_CONFIG) -i ../flashmap/$(FLASH_MAP) -o ./source -n memorymap -d $(IMG_ID) > ./memorymap.mk.tmp
+	@if ! cmp -s "memorymap.mk.tmp" "memorymap.mk"; then \
+		mv -f "memorymap.mk.tmp" "memorymap.mk"; \
+	else \
+		rm -f "memorymap.mk.tmp"; \
+	fi
 	@echo -e "=============================================================\n"
 
 endif
--include ./memorymap.mk
+-include memorymap.mk
 DEFINES+=CY_FLASH_MAP_JSON
 endif
 
@@ -283,11 +293,7 @@ HEX_START_ADDR?=$(SECONDARY_IMG_START)
 endif
 
 # Custom pre-build commands to run.
-prebuild:
-	@rm -f ./source/memorymap.c
-	@rm -f ./source/memorymap.h
-	@rm -f ./memorymap.mk
-	@$(MAKE) generate_flashmap_blinky_app
+PREBUILD=
 
 # Custom post-build commands to run.
 # 1. Take a backup of the original hex file (_raw.hex)
